@@ -6,9 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.ErrorCodes
-import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+import com.firebase.ui.auth.*
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -34,6 +32,12 @@ class AuthenticationActivity : AppCompatActivity() {
     ) { res ->
         this.onSignInResult(res)
     }
+
+    private val customAuthLayout = AuthMethodPickerLayout
+        .Builder(R.layout.auth_method_picker)
+        .setGoogleButtonId(R.id.google_button)
+        .setEmailButtonId(R.id.email_button)
+        .build()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +85,8 @@ class AuthenticationActivity : AppCompatActivity() {
         // SIGN_IN_RESULT_CODE code.
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
-            //.setIsSmartLockEnabled(!BuildConfig.DEBUG, true) //temporary for testing
+            .setIsSmartLockEnabled(!BuildConfig.DEBUG, true) //temporary for testing
+            .setAuthMethodPickerLayout(customAuthLayout)
             .setAvailableProviders(providers)
             .build()
         signInLauncher.launch(signInIntent)
