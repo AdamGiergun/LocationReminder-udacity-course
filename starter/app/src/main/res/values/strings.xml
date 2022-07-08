@@ -42,4 +42,7 @@
     <string name="error_adding_geofence">Error Happened, Can\'t Add Geofence</string>
     <string name="authentication_failed">Authentication failed</string>
     <string name="unknown_user">Unknown user</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="no_internet_connection">No Internet connection</string>
+    <string name="sign_in_cancelled">Sign in cancelled</string>
 </resources>

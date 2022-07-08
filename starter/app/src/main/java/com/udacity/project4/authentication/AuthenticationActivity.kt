@@ -7,9 +7,12 @@ import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.ErrorCodes
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
+import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
 import com.udacity.project4.locationreminders.RemindersActivity
 
@@ -50,7 +53,7 @@ class AuthenticationActivity : AppCompatActivity() {
                 }
                 else -> {
                     binding.authText.text =
-                        getString(com.udacity.project4.R.string.authentication_failed)
+                        getString(R.string.authentication_failed)
                 }
             }
         }
@@ -78,6 +81,7 @@ class AuthenticationActivity : AppCompatActivity() {
         // SIGN_IN_RESULT_CODE code.
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
+            //.setIsSmartLockEnabled(!BuildConfig.DEBUG, true) //temporary for testing
             .setAvailableProviders(providers)
             .build()
         signInLauncher.launch(signInIntent)
@@ -93,7 +97,31 @@ class AuthenticationActivity : AppCompatActivity() {
             )
         } else {
             Log.i(TAG, "Sign in unsuccessful ${response?.error?.errorCode}")
+            // Sign in failed
+            if (response == null) {
+                // User pressed back button
+                showSnackbar(R.string.sign_in_cancelled)
+                return
+            }
+
+            response.error?.let {
+                if (it.errorCode == ErrorCodes.NO_NETWORK) {
+                    showSnackbar(R.string.no_internet_connection)
+                    return
+                }
+            }
+
+            showSnackbar(R.string.unknown_error)
+            Log.e(TAG, "Sign-in error: ", response.error)
         }
+    }
+
+    private fun showSnackbar(stringId: Int) {
+        Snackbar.make(
+            binding.root,
+            stringId,
+            Snackbar.LENGTH_INDEFINITE
+        ).show()
     }
 
     private fun getDisplayName(): String {
@@ -108,10 +136,10 @@ class AuthenticationActivity : AppCompatActivity() {
                     }
                 }
                 if (displayName == null || displayName == "")
-                    user?.email ?: getString(com.udacity.project4.R.string.unknown_user)
+                    user?.email ?: getString(R.string.unknown_user)
                 else
                     displayName
-            } ?: getString(com.udacity.project4.R.string.unknown_user)
+            } ?: getString(R.string.unknown_user)
         }
     }
 }
