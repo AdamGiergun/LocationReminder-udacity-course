@@ -37,18 +37,20 @@ class AuthenticationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        launchSignInFlow()
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            startRemindersActivity()
+        } else {
+            launchSignInFlow()
+        }
 
         viewModel.authenticationState.observe(this) { authenticationState ->
             when (authenticationState) {
                 AuthenticationViewModel.AuthenticationState.AUTHENTICATED -> {
-                    Intent(this, RemindersActivity::class.java).run {
-                        startActivity(this)
-                    }
-
+                    startRemindersActivity()
                 }
                 else -> {
-                    binding.authText.text = getString(com.udacity.project4.R.string.authentication_failed)
+                    binding.authText.text =
+                        getString(com.udacity.project4.R.string.authentication_failed)
                 }
             }
         }
@@ -58,11 +60,18 @@ class AuthenticationActivity : AppCompatActivity() {
 
     }
 
+    private fun startRemindersActivity() {
+        Intent(this, RemindersActivity::class.java).run {
+            startActivity(this)
+        }
+    }
+
     private fun launchSignInFlow() {
         // Give users the option to sign in / register with their email or Google account. If users
         // choose to register with their email, they will need to create a password as well.
         val providers = arrayListOf(
-            AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
+            AuthUI.IdpConfig.EmailBuilder().build(),
+            AuthUI.IdpConfig.GoogleBuilder().build()
         )
 
         // Create and launch sign-in intent. We listen to the response of this activity with the
