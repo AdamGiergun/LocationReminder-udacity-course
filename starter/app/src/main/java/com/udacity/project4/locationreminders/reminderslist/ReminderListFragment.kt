@@ -2,7 +2,8 @@ package com.udacity.project4.locationreminders.reminderslist
 
 import android.os.Bundle
 import android.view.*
-import androidx.databinding.DataBindingUtil
+import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -12,22 +13,23 @@ import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class ReminderListFragment : BaseFragment() {
+class ReminderListFragment : BaseFragment(), MenuProvider {
     //use Koin to retrieve the ViewModel instance
     override val _viewModel: RemindersListViewModel by viewModel()
     private lateinit var binding: FragmentRemindersBinding
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding =
-            DataBindingUtil.inflate(
-                inflater,
-                R.layout.fragment_reminders, container, false
-            )
+    ): View {
+
+        binding = FragmentRemindersBinding.inflate(inflater)
         binding.viewModel = _viewModel
 
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(
+            this,
+            viewLifecycleOwner,
+            Lifecycle.State.RESUMED
+        )
         setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
 
@@ -68,20 +70,16 @@ class ReminderListFragment : BaseFragment() {
         binding.reminderssRecyclerView.setup(adapter)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
             R.id.logout -> {
 //                TODO: add the logout implementation
             }
         }
-        return super.onOptionsItemSelected(item)
-
+        return false
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-//        display logout as menu item
-        inflater.inflate(R.menu.main_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.main_menu, menu)
     }
-
 }
