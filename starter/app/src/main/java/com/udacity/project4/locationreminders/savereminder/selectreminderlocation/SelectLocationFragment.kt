@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
@@ -29,7 +30,7 @@ import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
-class SelectLocationFragment : BaseFragment() {
+class SelectLocationFragment : BaseFragment(), MenuProvider {
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
@@ -37,14 +38,13 @@ class SelectLocationFragment : BaseFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_select_location, container, false)
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
 
-        setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
 //        TODO: add the map setup implementation
@@ -65,12 +65,11 @@ class SelectLocationFragment : BaseFragment() {
         //         and navigate back to the previous fragment to save the reminder and add the geofence
     }
 
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.map_options, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.map_options, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
         // TODO: Change the map type based on the user's selection.
         R.id.normal_map -> {
             true
@@ -84,8 +83,6 @@ class SelectLocationFragment : BaseFragment() {
         R.id.terrain_map -> {
             true
         }
-        else -> super.onOptionsItemSelected(item)
+        else -> false
     }
-
-
 }
