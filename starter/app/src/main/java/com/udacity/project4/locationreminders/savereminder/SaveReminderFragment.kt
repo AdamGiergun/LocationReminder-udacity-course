@@ -20,9 +20,8 @@ class SaveReminderFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_save_reminder, container, false)
+    ): View {
+        binding = FragmentSaveReminderBinding.inflate(inflater)
 
         setDisplayHomeAsUpEnabled(true)
 
@@ -42,9 +41,9 @@ class SaveReminderFragment : BaseFragment() {
 
         binding.saveReminder.setOnClickListener {
             val title = _viewModel.reminderTitle.value
-            val description = _viewModel.reminderDescription
+            val description = _viewModel.reminderDescription.value
             val location = _viewModel.reminderSelectedLocationStr.value
-            val latitude = _viewModel.latitude
+            val latitude = _viewModel.latitude.value
             val longitude = _viewModel.longitude.value
 
 //            TODO: use the user entered reminder details to:
