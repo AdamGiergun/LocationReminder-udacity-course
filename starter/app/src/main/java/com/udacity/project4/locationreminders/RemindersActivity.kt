@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
+import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityRemindersBinding
 
 /**
@@ -11,19 +12,17 @@ import com.udacity.project4.databinding.ActivityRemindersBinding
  */
 class RemindersActivity : AppCompatActivity() {
 
-    private val binding: ActivityRemindersBinding by lazy {
-        ActivityRemindersBinding.inflate(layoutInflater)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(binding.root)
+        ActivityRemindersBinding.inflate(layoutInflater).run {
+            setContentView(root)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                binding.root.findNavController().popBackStack()
+                findNavController(R.id.nav_host_fragment).popBackStack()
                 return true
             }
         }
