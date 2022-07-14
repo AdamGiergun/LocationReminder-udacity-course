@@ -13,6 +13,7 @@ import android.view.*
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
@@ -36,11 +37,18 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
 
+    private val isGoogleMapsInstalled
+        get() = try {
+            requireActivity().packageManager.getApplicationInfo("com.google.android.apps.maps", 0)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_select_location, container, false)
+        binding = FragmentSelectLocationBinding.inflate(inflater)
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
