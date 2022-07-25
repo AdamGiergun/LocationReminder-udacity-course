@@ -17,20 +17,20 @@ abstract class BaseFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        _viewModel.showErrorMessage.observe(this, Observer {
-            Toast.makeText(activity, it, Toast.LENGTH_LONG).show()
-        })
-        _viewModel.showToast.observe(this, Observer {
-            Toast.makeText(activity, it, Toast.LENGTH_LONG).show()
-        })
-        _viewModel.showSnackBar.observe(this, Observer {
-            Snackbar.make(this.view!!, it, Snackbar.LENGTH_LONG).show()
-        })
-        _viewModel.showSnackBarInt.observe(this, Observer {
-            Snackbar.make(this.view!!, getString(it), Snackbar.LENGTH_LONG).show()
-        })
+        _viewModel.showErrorMessage.observe(this) {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+        }
+        _viewModel.showToast.observe(this) {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+        }
+        _viewModel.showSnackBar.observe(this) {
+            Snackbar.make(requireView(), it, Snackbar.LENGTH_LONG).show()
+        }
+        _viewModel.showSnackBarInt.observe(this) {
+            Snackbar.make(requireView(), getString(it), Snackbar.LENGTH_LONG).show()
+        }
 
-        _viewModel.navigationCommand.observe(this, Observer { command ->
+        _viewModel.navigationCommand.observe(this) { command ->
             when (command) {
                 is NavigationCommand.To -> findNavController().navigate(command.directions)
                 is NavigationCommand.Back -> findNavController().popBackStack()
@@ -39,6 +39,6 @@ abstract class BaseFragment : Fragment() {
                     false
                 )
             }
-        })
+        }
     }
 }
