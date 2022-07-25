@@ -1,34 +1,30 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
-
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
-import android.content.pm.PackageManager
-import android.content.res.Resources
+import android.location.Location
+import android.net.Uri
 import android.os.Bundle
-import android.util.Log
+import android.provider.Settings
 import android.view.*
-import androidx.core.content.ContextCompat
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuProvider
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
-import com.google.android.material.snackbar.Snackbar
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.ktx.awaitMap
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
-import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
+import com.udacity.project4.utils.*
 import org.koin.android.ext.android.inject
 
 class SelectLocationFragment : BaseFragment(), MenuProvider {
@@ -36,14 +32,55 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
+    private var googleMap: GoogleMap? = null
 
-    private val isGoogleMapsInstalled
-        get() = try {
-            requireActivity().packageManager.getApplicationInfo("com.google.android.apps.maps", 0)
-            true
-        } catch (e: PackageManager.NameNotFoundException) {
-            false
+    private val permissionsRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        var granted = true
+        permissions.forEach {
+            granted = granted and it.value
         }
+
+        if (granted)
+            _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
+        else {
+
+            val permission =
+                if (Manifest.permission.ACCESS_BACKGROUND_LOCATION in permissions)
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                else
+                    Manifest.permission.ACCESS_FINE_LOCATION
+
+            _viewModel.showToast.value =
+                if (permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    "Access background location is needed"
+                else
+                    "Fine location is needed"
+
+            if (shouldShowRequestPermissionRationale(permission)) {
+                _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
+            } else {
+                appPermissionsSettingsRequest.launch(
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", requireActivity().packageName, null)
+                    }
+                )
+            }
+        }
+    }
+
+    private val appPermissionsSettingsRequest = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
+    }
+
+    private val enableLocationRequestLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) {
+        _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -55,7 +92,104 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
 
         setDisplayHomeAsUpEnabled(true)
 
+        _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
+
+        _viewModel.locationState.observe(viewLifecycleOwner) {
+            when (it) {
+                LocationState.CHECK_SETTINGS -> {
+                    val builder = LocationSettingsRequest.Builder()
+                        .addLocationRequest(locationRequest)
+
+                    val client: SettingsClient =
+                        LocationServices.getSettingsClient(requireContext())
+                    client.checkLocationSettings(builder.build()).apply {
+                        addOnSuccessListener { locationSettingsResponse ->
+                            locationSettingsResponse.locationSettingsStates?.let { states ->
+                                if (states.isGpsPresent) {
+                                    val fineLoc = isFineLocationPermissionGranted(requireContext())
+                                    val bgrLoc =
+                                        isBackgroundLocationPermissionGranted(requireContext())
+//                                        val gps = states.isGpsUsable
+
+                                    if (!fineLoc)
+                                        _viewModel.setLocationState(LocationState.FINE_LOCATION_NOT_PERMITTED)
+
+                                    if (!bgrLoc)
+                                        _viewModel.setLocationState(LocationState.BACKGROUND_LOCATION_NOT_PERMITTED)
+
+                                    if (fineLoc and bgrLoc)
+                                        _viewModel.setLocationState(LocationState.ENABLED)
+
+                                } else {
+                                    _viewModel.setLocationState(LocationState.GPS_NOT_PRESENT)
+                                }
+                            }
+                        }
+
+                        addOnFailureListener { exception ->
+                            if (exception is ResolvableApiException) {
+                                try {
+                                    val intentSenderRequest = IntentSenderRequest
+                                        .Builder(exception.resolution.intentSender)
+                                        .build()
+
+                                    enableLocationRequestLauncher.launch(intentSenderRequest)
+
+                                } catch (sendEx: IntentSender.SendIntentException) {
+                                    _viewModel.setLocationState(LocationState.LOCATION_NOT_USABLE)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                LocationState.FINE_LOCATION_NOT_PERMITTED -> {
+                    permissionsRequest.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    )
+                }
+
+                LocationState.BACKGROUND_LOCATION_NOT_PERMITTED -> {
+                    permissionsRequest.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                        )
+                    )
+                }
+
+                LocationState.ENABLED -> {
+
+                }
+
+                LocationState.GPS_NOT_PRESENT -> {
+                    _viewModel.navigationCommand.value = NavigationCommand.Back
+                    _viewModel.showSnackBar.value =
+                        getString(R.string.gps_is_needed_for_this_to_work)
+                }
+
+                LocationState.LOCATION_NOT_USABLE -> {
+                    _viewModel.navigationCommand.value = NavigationCommand.Back
+                    _viewModel.showSnackBar.value =
+                        getString(R.string.location_service_is_needed_for_this_to_work)
+                }
+
+                else -> {
+                    _viewModel.navigationCommand.value = NavigationCommand.Back
+                    _viewModel.showSnackBar.value = getString(R.string.error_happened)
+                }
+            }
+        }
+
 //        TODO: add the map setup implementation
+        lifecycleScope.launchWhenCreated {
+            val mapFragment: SupportMapFragment? =
+                childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
+            googleMap = mapFragment?.awaitMap()
+        }
+
 //        TODO: zoom to the user location after taking his permission
 //        TODO: add style to the map
 //        TODO: put a marker to location that the user selected

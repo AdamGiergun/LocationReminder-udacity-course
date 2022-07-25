@@ -45,4 +45,6 @@
     <string name="unknown_error">Unknown error</string>
     <string name="no_internet_connection">No Internet connection</string>
     <string name="sign_in_cancelled">Sign in cancelled</string>
+    <string name="gps_is_needed_for_this_to_work">GPS is needed for this to work</string>
+    <string name="location_service_is_needed_for_this_to_work">The location service is needed for this to work</string>
 </resources>
