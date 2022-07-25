@@ -3,7 +3,6 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 import android.Manifest
 import android.content.Intent
 import android.content.IntentSender
-import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -13,7 +12,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
@@ -33,6 +36,8 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
     private var googleMap: GoogleMap? = null
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private val permissionsRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -161,7 +166,20 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
                 }
 
                 LocationState.ENABLED -> {
-
+                    fusedLocationClient.getCurrentLocation(PRIORITY_HIGH_ACCURACY, null)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val currentLocation = task.result
+                            googleMap?.apply {
+                                moveCamera(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(currentLocation.latitude, currentLocation.longitude),
+                                        15f
+                                    )
+                                )
+                            }
+                        }
+                    }
                 }
 
                 LocationState.GPS_NOT_PRESENT -> {
@@ -183,14 +201,14 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
             }
         }
 
-//        TODO: add the map setup implementation
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
         lifecycleScope.launchWhenCreated {
             val mapFragment: SupportMapFragment? =
                 childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
             googleMap = mapFragment?.awaitMap()
         }
 
-//        TODO: zoom to the user location after taking his permission
 //        TODO: add style to the map
 //        TODO: put a marker to location that the user selected
 
