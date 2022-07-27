@@ -3,9 +3,11 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 import android.Manifest
 import android.content.Intent
 import android.content.IntentSender
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.*
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,6 +23,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.ktx.awaitMap
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
@@ -29,6 +32,8 @@ import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.*
 import org.koin.android.ext.android.inject
+
+private const val TAG = "LocationReminder"
 
 class SelectLocationFragment : BaseFragment(), MenuProvider {
 
@@ -170,16 +175,19 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 val currentLocation = task.result
-                            googleMap?.apply {
-                                moveCamera(
-                                    CameraUpdateFactory.newLatLngZoom(
-                                        LatLng(currentLocation.latitude, currentLocation.longitude),
-                                        15f
+                                googleMap?.apply {
+                                    moveCamera(
+                                        CameraUpdateFactory.newLatLngZoom(
+                                            LatLng(
+                                                currentLocation.latitude,
+                                                currentLocation.longitude
+                                            ),
+                                            15f
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
-                    }
                 }
 
                 LocationState.GPS_NOT_PRESENT -> {
@@ -207,9 +215,9 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
             val mapFragment: SupportMapFragment? =
                 childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
             googleMap = mapFragment?.awaitMap()
+            googleMap?.setMyMapStyle()
         }
 
-//        TODO: add style to the map
 //        TODO: put a marker to location that the user selected
 
 
@@ -217,6 +225,23 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
         onLocationSelected()
 
         return binding.root
+    }
+
+    private fun GoogleMap.setMyMapStyle() {
+        try {
+            val success = setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    requireContext(),
+                    R.raw.map_style
+                )
+            )
+
+            if (!success) {
+                Log.d(TAG, "Style parsing failed.")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.d(TAG, "Can't find style. Error: ", e)
+        }
     }
 
     private fun onLocationSelected() {
