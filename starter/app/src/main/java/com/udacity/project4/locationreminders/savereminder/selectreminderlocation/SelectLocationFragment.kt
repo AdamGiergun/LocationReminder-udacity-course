@@ -24,6 +24,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.ktx.awaitMap
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
@@ -215,11 +216,16 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
             val mapFragment: SupportMapFragment? =
                 childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
             googleMap = mapFragment?.awaitMap()
-            googleMap?.setMyMapStyle()
+            googleMap?.apply {
+                setMyMapStyle()
+                setOnMapLongClickListener{ latLng ->
+                    addMarker(
+                        MarkerOptions()
+                            .position(latLng)
+                    )
+                }
+            }
         }
-
-//        TODO: put a marker to location that the user selected
-
 
 //        TODO: call this function after the user confirms on the selected location
         onLocationSelected()
