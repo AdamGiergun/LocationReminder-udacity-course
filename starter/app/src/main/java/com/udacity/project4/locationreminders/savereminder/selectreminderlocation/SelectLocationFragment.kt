@@ -223,9 +223,12 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
                         MarkerOptions()
                             .position(latLng)
                     )
+//                    TODO: show dialog asking for saving marked location
                 }
             }
         }
+
+        _viewModel.showSnackBar.value = "Select some location for the reminder by pointing it and holding it for a moment."
 
 //        TODO: call this function after the user confirms on the selected location
         onLocationSelected()
