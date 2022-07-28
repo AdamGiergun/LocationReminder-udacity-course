@@ -15,6 +15,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -40,7 +41,7 @@ import org.koin.android.ext.android.inject
 
 private const val TAG = "LocationReminder"
 
-class SelectLocationFragment : BaseFragment(), MenuProvider {
+class SelectLocationFragment : BaseFragment() {
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
@@ -106,6 +107,32 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
         binding.lifecycleOwner = this
 
         setDisplayHomeAsUpEnabled(true)
+
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.map_options, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
+                R.id.normal_map -> {
+                    googleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                    true
+                }
+                R.id.hybrid_map -> {
+                    googleMap?.mapType = GoogleMap.MAP_TYPE_HYBRID
+                    true
+                }
+                R.id.satellite_map -> {
+                    googleMap?.mapType = GoogleMap.MAP_TYPE_SATELLITE
+                    true
+                }
+                R.id.terrain_map -> {
+                    googleMap?.mapType = GoogleMap.MAP_TYPE_TERRAIN
+                    true
+                }
+                else -> false
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         _viewModel.isLocationSelected.value = false
 
@@ -270,27 +297,6 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
 
     private fun onLocationSelected() {
         _viewModel.navigationCommand.value = NavigationCommand.Back
-    }
-
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.map_options, menu)
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
-        // TODO: Change the map type based on the user's selection.
-        R.id.normal_map -> {
-            true
-        }
-        R.id.hybrid_map -> {
-            true
-        }
-        R.id.satellite_map -> {
-            true
-        }
-        R.id.terrain_map -> {
-            true
-        }
-        else -> false
     }
 
     internal class SaveLocationDialog(
