@@ -1,6 +1,8 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 import android.Manifest
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.content.IntentSender
 import android.content.res.Resources
@@ -12,6 +14,7 @@ import android.view.*
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuProvider
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -24,6 +27,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.ktx.awaitMap
 import com.udacity.project4.R
@@ -102,6 +106,8 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
         binding.lifecycleOwner = this
 
         setDisplayHomeAsUpEnabled(true)
+
+        _viewModel.isLocationSelected.value = false
 
         _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
 
@@ -218,20 +224,29 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
             googleMap = mapFragment?.awaitMap()
             googleMap?.apply {
                 setMyMapStyle()
-                setOnMapLongClickListener{ latLng ->
-                    addMarker(
+
+                setOnMapLongClickListener { latLng ->
+                    val marker = addMarker(
                         MarkerOptions()
                             .position(latLng)
                     )
-//                    TODO: show dialog asking for saving marked location
+                    SaveLocationDialog(_viewModel, latLng, marker)
+                        .show(childFragmentManager, TAG)
                 }
             }
         }
 
-        _viewModel.showSnackBar.value = "Select some location for the reminder by pointing it and holding it for a moment."
+        _viewModel.showSnackBar.value =
+            "Select some location for the reminder by pointing it and holding it for a moment."
 
-//        TODO: call this function after the user confirms on the selected location
-        onLocationSelected()
+        _viewModel.isLocationSelected.observe(viewLifecycleOwner) { isLocationSelected ->
+            if (isLocationSelected) {
+                onLocationSelected()
+            } else {
+                _viewModel.latitude.value = null
+                _viewModel.longitude.value = null
+            }
+        }
 
         return binding.root
     }
@@ -254,9 +269,7 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
     }
 
     private fun onLocationSelected() {
-        //        TODO: When the user confirms on the selected location,
-        //         send back the selected location details to the view model
-        //         and navigate back to the previous fragment to save the reminder and add the geofence
+        _viewModel.navigationCommand.value = NavigationCommand.Back
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -278,5 +291,29 @@ class SelectLocationFragment : BaseFragment(), MenuProvider {
             true
         }
         else -> false
+    }
+
+    internal class SaveLocationDialog(
+        private val viewModel: SaveReminderViewModel,
+        private val latLng: LatLng,
+        private val marker: Marker?
+    ) : DialogFragment() {
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            return requireActivity().let {
+                AlertDialog.Builder(it).run {
+                    setMessage(getString(R.string.save_this_position))
+                    setPositiveButton(android.R.string.ok) { _, _ ->
+                        viewModel.latitude.value = latLng.latitude
+                        viewModel.longitude.value = latLng.longitude
+                        viewModel.isLocationSelected.value = true
+                    }
+                    setNegativeButton(android.R.string.cancel) { _, _ ->
+                        viewModel.isLocationSelected.value = false
+                        marker?.remove()
+                    }
+                    create()
+                }
+            }
+        }
     }
 }

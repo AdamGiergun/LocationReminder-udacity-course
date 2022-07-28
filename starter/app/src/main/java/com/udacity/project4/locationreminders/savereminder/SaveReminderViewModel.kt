@@ -23,6 +23,8 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     val latitude = MutableLiveData<Double>()
     val longitude = MutableLiveData<Double>()
 
+    val isLocationSelected = MutableLiveData(false)
+
     private val _locationState = MutableLiveData(LocationState.CHECK_SETTINGS)
     val locationState: LiveData<LocationState>
         get() = _locationState
