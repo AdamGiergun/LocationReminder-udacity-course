@@ -270,7 +270,7 @@ class SelectLocationFragment : BaseFragment() {
         }
 
         _viewModel.showSnackBar.value =
-            "Select some location for the reminder by pointing it and holding it for a moment."
+            getString(R.string.info_about_selecting_location)
 
         _viewModel.isLocationSelected.observe(viewLifecycleOwner) { isLocationSelected ->
             if (isLocationSelected) {
