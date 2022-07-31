@@ -258,11 +258,15 @@ class SelectLocationFragment : BaseFragment() {
                 }
 
                 setOnPoiClickListener { pointOfInterest ->
-                    val marker = addMarker(
+                    val poiMarker = addMarker(
                         MarkerOptions()
                             .position(pointOfInterest.latLng)
+                            .title(pointOfInterest.name)
                     )
-                    SaveLocationDialog(_viewModel, pointOfInterest, null, marker)
+
+                    poiMarker?.showInfoWindow()
+
+                    SaveLocationDialog(_viewModel, pointOfInterest, null, poiMarker)
                         .show(childFragmentManager, TAG)
                 }
             }
