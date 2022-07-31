@@ -26,10 +26,7 @@ import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.maps.android.ktx.awaitMap
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
@@ -257,7 +254,16 @@ class SelectLocationFragment : BaseFragment() {
                         MarkerOptions()
                             .position(latLng)
                     )
-                    SaveLocationDialog(_viewModel, latLng, marker)
+                    SaveLocationDialog(_viewModel, null, latLng, marker)
+                        .show(childFragmentManager, TAG)
+                }
+
+                setOnPoiClickListener { pointOfInterest ->
+                    val marker = addMarker(
+                        MarkerOptions()
+                            .position(pointOfInterest.latLng)
+                    )
+                    SaveLocationDialog(_viewModel, pointOfInterest, null, marker)
                         .show(childFragmentManager, TAG)
                 }
             }
@@ -270,8 +276,10 @@ class SelectLocationFragment : BaseFragment() {
             if (isLocationSelected) {
                 onLocationSelected()
             } else {
+                _viewModel.selectedPOI.value = null
                 _viewModel.latitude.value = null
                 _viewModel.longitude.value = null
+                _viewModel.reminderSelectedLocationStr.value = null
             }
         }
 
@@ -301,17 +309,33 @@ class SelectLocationFragment : BaseFragment() {
 
     internal class SaveLocationDialog(
         private val viewModel: SaveReminderViewModel,
-        private val latLng: LatLng,
-        private val marker: Marker?
+        private val selectedPOI: PointOfInterest? = null,
+        private val latLng: LatLng? = null,
+        private val marker: Marker? = null
     ) : DialogFragment() {
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             return requireActivity().let {
                 AlertDialog.Builder(it).run {
-                    setMessage(getString(R.string.save_this_position))
+                    setMessage(
+                        if (selectedPOI == null)
+                            getString(R.string.save_this_location, "")
+                        else
+                            getString(R.string.save_this_location, "\n(${selectedPOI.name})")
+                    )
                     setPositiveButton(android.R.string.ok) { _, _ ->
-                        viewModel.latitude.value = latLng.latitude
-                        viewModel.longitude.value = latLng.longitude
-                        viewModel.isLocationSelected.value = true
+                        if (selectedPOI == null) {
+                            latLng?.let {
+                                viewModel.latitude.value = latLng.latitude
+                                viewModel.longitude.value = latLng.longitude
+                                viewModel.isLocationSelected.value = true
+                            }
+                        } else {
+                            viewModel.selectedPOI.value = selectedPOI
+                            viewModel.latitude.value = selectedPOI.latLng.latitude
+                            viewModel.longitude.value = selectedPOI.latLng.longitude
+                            viewModel.reminderSelectedLocationStr.value = selectedPOI.name
+                            viewModel.isLocationSelected.value = true
+                        }
                     }
                     setNegativeButton(android.R.string.cancel) { _, _ ->
                         viewModel.isLocationSelected.value = false
