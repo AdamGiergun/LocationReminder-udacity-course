@@ -223,19 +223,18 @@ class SelectLocationFragment : BaseFragment() {
 
                 LocationState.GPS_NOT_PRESENT -> {
                     _viewModel.navigationCommand.value = NavigationCommand.Back
-                    _viewModel.showSnackBar.value =
-                        getString(R.string.gps_is_needed_for_this_to_work)
+                    _viewModel.showSnackBarInt.value = R.string.gps_is_needed_for_this_to_work
                 }
 
                 LocationState.LOCATION_NOT_USABLE -> {
                     _viewModel.navigationCommand.value = NavigationCommand.Back
-                    _viewModel.showSnackBar.value =
-                        getString(R.string.location_service_is_needed_for_this_to_work)
+                    _viewModel.showSnackBarInt.value =
+                        R.string.location_service_is_needed_for_this_to_work
                 }
 
                 else -> {
                     _viewModel.navigationCommand.value = NavigationCommand.Back
-                    _viewModel.showSnackBar.value = getString(R.string.error_happened)
+                    _viewModel.showSnackBarInt.value = R.string.error_happened
                 }
             }
         }
@@ -269,8 +268,7 @@ class SelectLocationFragment : BaseFragment() {
             }
         }
 
-        _viewModel.showSnackBar.value =
-            getString(R.string.info_about_selecting_location)
+        _viewModel.showSnackBarInt.value = R.string.info_about_selecting_location
 
         _viewModel.isLocationSelected.observe(viewLifecycleOwner) { isLocationSelected ->
             if (isLocationSelected) {
