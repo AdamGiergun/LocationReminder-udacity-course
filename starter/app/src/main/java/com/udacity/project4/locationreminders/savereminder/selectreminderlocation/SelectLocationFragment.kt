@@ -330,6 +330,7 @@ class SelectLocationFragment : BaseFragment() {
                                 viewModel.latitude.value = latLng.latitude
                                 viewModel.longitude.value = latLng.longitude
                                 viewModel.isLocationSelected.value = true
+                                viewModel.reminderSelectedLocationStr.value = getString(R.string.undisclosed_location)
                             }
                         } else {
                             viewModel.selectedPOI.value = selectedPOI
