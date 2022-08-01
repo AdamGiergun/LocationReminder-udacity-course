@@ -48,7 +48,15 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     /**
      * Validate the entered data then saves the reminder data to the DataSource
      */
-    fun validateAndSaveReminder(reminderData: ReminderDataItem) {
+    fun validateAndSaveReminder() {
+        val reminderData = ReminderDataItem(
+            reminderTitle.value,
+            reminderDescription.value,
+            reminderSelectedLocationStr.value,
+            latitude.value,
+            longitude.value
+        )
+
         if (validateEnteredData(reminderData)) {
             saveReminder(reminderData)
         }
@@ -57,7 +65,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     /**
      * Save the reminder to the data source
      */
-    fun saveReminder(reminderData: ReminderDataItem) {
+    private fun saveReminder(reminderData: ReminderDataItem) {
         showLoading.value = true
         viewModelScope.launch {
             dataSource.saveReminder(
@@ -85,7 +93,10 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             return false
         }
 
-        if (reminderData.location.isNullOrEmpty()) {
+        if (reminderData.location.isNullOrEmpty()
+            || reminderData.latitude == null
+            || reminderData.longitude == null
+        ) {
             showSnackBarInt.value = R.string.err_select_location
             return false
         }
