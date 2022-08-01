@@ -4,8 +4,8 @@ import android.content.Context
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.udacity.project4.R
 
-const val ACTION_GEOFENCE_EVENT =
-    "com.udacity.project4.action.ACTION_GEOFENCE_EVENT"
+const val ACTION_GEOFENCE_EVENT = "com.udacity.project4.action.ACTION_GEOFENCE_EVENT"
+const val GEOFENCE_RADIUS_IN_METERS = 100f
 
 /**
  * Returns the error string for a geofencing error code.

@@ -24,6 +24,7 @@ import com.udacity.project4.databinding.FragmentSaveReminderBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.ACTION_GEOFENCE_EVENT
+import com.udacity.project4.utils.GEOFENCE_RADIUS_IN_METERS
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 import java.util.*
@@ -105,7 +106,7 @@ class SaveReminderFragment : BaseFragment() {
                 .setCircularRegion(
                     latitude!!,
                     longitude!!,
-                    20f //GeofencingConstants.GEOFENCE_RADIUS_IN_METERS
+                    GEOFENCE_RADIUS_IN_METERS
                 )
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
