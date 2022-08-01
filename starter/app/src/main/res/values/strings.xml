@@ -40,6 +40,7 @@
     <string name="geofence_not_available">Geofence service is not available now. Go to Settings>Location>Mode and choose High accuracy.</string>
     <string name="geofence_too_many_geofences">Your app has registered too many geofences.</string>
     <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call.</string>
+    <string name="geofence_transition_invalid_type">Geofence transition error: invalid transition type %1$d</string>
     <string name="error_adding_geofence">Error Happened, Can\'t Add Geofence</string>
     <string name="authentication_failed">Authentication failed</string>
     <string name="unknown_user">Unknown user</string>

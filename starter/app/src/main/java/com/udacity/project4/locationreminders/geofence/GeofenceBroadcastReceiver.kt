@@ -16,8 +16,7 @@ import android.content.Intent
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-
-//TODO: implement the onReceive method to receive the geofencing events at the background
-
+        // Enqueues a JobIntentService passing the context and intent as parameters
+        GeofenceTransitionsJobIntentService.enqueueWork(context, intent)
     }
 }
