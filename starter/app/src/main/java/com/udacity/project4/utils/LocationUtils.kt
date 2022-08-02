@@ -22,7 +22,7 @@ val locationRequest
     get() = LocationRequest.create().apply {
         interval = 2000
         fastestInterval = 1000
-        priority = Priority.PRIORITY_BALANCED_POWER_ACCURACY
+        priority = Priority.PRIORITY_HIGH_ACCURACY
     }
 
 fun isBackgroundLocationPermissionGranted(context: Context) =
