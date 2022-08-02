@@ -17,8 +17,6 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
-
-        resValue "string", "location_reminder_google_maps_api_key", LOCATION_REMINDER_GOOGLE_MAPS_API_KEY
     }
     buildTypes {
         release {
@@ -33,7 +31,6 @@ android {
         includeAndroidResources = true
         returnDefaultValues = true
     }
-
     //dataBinding {
     //    enabled = true
     //    enabledForTests = true
@@ -78,6 +75,9 @@ dependencies {
 
     //Coroutines Dependencies
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+
+    //Worker Dependencies
+    implementation "androidx.work:work-runtime-ktx:$workerVersion"
 
     //Koin
     implementation "io.insert-koin:koin-android:$koinVersion"
