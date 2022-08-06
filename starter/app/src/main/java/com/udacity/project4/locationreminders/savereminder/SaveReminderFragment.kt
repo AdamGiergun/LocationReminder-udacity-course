@@ -42,7 +42,7 @@ class SaveReminderFragment : BaseFragment() {
             0,
             intent,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             } else {
                 PendingIntent.FLAG_UPDATE_CURRENT
             }
@@ -98,11 +98,13 @@ class SaveReminderFragment : BaseFragment() {
         )
 
         if (_viewModel.validateEnteredData(reminderData)) {
+            val geofencingRequest = getGeofencingRequest(latitude!!, longitude!!)
             geofencingClient.addGeofences(
-                getGeofencingRequest(latitude!!, longitude!!),
+                geofencingRequest,
                 geofencePendingIntent).apply {
                 addOnSuccessListener {
                     _viewModel.showSnackBar.value = "Geofence added"
+                    _viewModel.id.value = geofencingRequest.geofences.first().requestId
                     _viewModel.validateAndSaveReminder()
                 }
                 addOnFailureListener { exception ->

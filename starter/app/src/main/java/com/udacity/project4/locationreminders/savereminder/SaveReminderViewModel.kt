@@ -22,6 +22,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     val selectedPOI = MutableLiveData<PointOfInterest>()
     val latitude = MutableLiveData<Double>()
     val longitude = MutableLiveData<Double>()
+    val id = MutableLiveData<String>()
 
     val isLocationSelected = MutableLiveData(false)
 
@@ -43,6 +44,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         selectedPOI.value = null
         latitude.value = null
         longitude.value = null
+        id.value = null
     }
 
     /**
@@ -54,7 +56,8 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             reminderDescription.value,
             reminderSelectedLocationStr.value,
             latitude.value,
-            longitude.value
+            longitude.value,
+            id.value ?: "unknown"
         )
 
         if (validateEnteredData(reminderData)) {
