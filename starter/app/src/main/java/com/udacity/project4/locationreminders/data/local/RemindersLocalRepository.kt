@@ -58,6 +58,18 @@ class RemindersLocalRepository(
     }
 
     /**
+     * Update a reminder by its id setting it activity state
+     * @param id to be used to update the reminder
+     * @param isActive to be used to update value of the reminder's field
+     * @return Result the holds a Success object with the Reminder or an Error object with the error message
+     */
+    override suspend fun setReminderState(id: String, isActive: Boolean) {
+        withContext(ioDispatcher) {
+            remindersDao.setReminderState(id, isActive)
+        }
+    }
+
+    /**
      * Deletes all the reminders in the db
      */
     override suspend fun deleteAllReminders() {

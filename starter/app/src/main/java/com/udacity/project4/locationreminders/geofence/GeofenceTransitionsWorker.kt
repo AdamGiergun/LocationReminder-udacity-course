@@ -14,13 +14,11 @@ import com.udacity.project4.utils.ACTION_GEOFENCE_EVENT
 import com.udacity.project4.utils.errorMessage
 import com.udacity.project4.utils.getGeofencingClient
 import com.udacity.project4.utils.sendNotification
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
 
 private const val TAG = "GeofenceTransitionsWorker"
-private const val REQUEST_ID = "requestId"
-const val UNIQUE_WORK_NAME = "LocationRemindersGeofenceTransition"
+const val REQUEST_ID = "requestId"
+private const val UNIQUE_WORK_NAME = "InactivateReminderWorker"
 
 class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
@@ -67,41 +65,46 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
 
     override suspend fun doWork(): Result {
         inputData.getString(REQUEST_ID)?.let { requestId ->
-            sendNotification(requestId)
             val geofencingClient = getGeofencingClient(applicationContext)
             geofencingClient.removeGeofences(listOf(requestId))
                 .addOnSuccessListener {
+                    InactivateReminderWorker.buildWorkRequest(requestId).let { workRequest ->
+                        WorkManager
+                            .getInstance(applicationContext)
+                            .enqueueUniqueWork(
+                                UNIQUE_WORK_NAME,
+                                ExistingWorkPolicy.KEEP,
+                                workRequest
+                            )
+                    }
                     Log.d(TAG, "Geofence removed")
                 }
                 .addOnFailureListener { exception ->
                     Log.d(TAG, "Geofence not removed ${exception.localizedMessage}")
                 }
+            sendNotification(requestId)
         }
         return Result.success()
     }
 
     private suspend fun sendNotification(requestId: String) {
-
-        //Get the local repository instance
         val remindersLocalRepository: ReminderDataSource by inject(ReminderDataSource::class.java)
-
         //get the reminder with the request id
-        withContext(Dispatchers.IO) {
-            val result = remindersLocalRepository.getReminder(requestId)
-            if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<ReminderDTO>) {
-                val reminderDTO = result.data
-                //send a notification to the user with the reminder details
-                sendNotification(
-                    applicationContext, ReminderDataItem(
-                        reminderDTO.title,
-                        reminderDTO.description,
-                        reminderDTO.location,
-                        reminderDTO.latitude,
-                        reminderDTO.longitude,
-                        reminderDTO.id
-                    )
+        val result = remindersLocalRepository.getReminder(requestId)
+        if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<ReminderDTO>) {
+            val reminderDTO = result.data
+            //send a notification to the user with the reminder details
+            sendNotification(
+                applicationContext, ReminderDataItem(
+                    reminderDTO.title,
+                    reminderDTO.description,
+                    reminderDTO.location,
+                    reminderDTO.latitude,
+                    reminderDTO.longitude,
+                    reminderDTO.isActive,
+                    reminderDTO.id
                 )
-            }
+            )
         }
     }
 }

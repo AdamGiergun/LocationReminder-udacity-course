@@ -39,4 +39,6 @@ interface RemindersDao {
     @Query("DELETE FROM reminders")
     fun deleteAllReminders()
 
+    @Query("UPDATE reminders SET is_active=:isActive WHERE entry_id=:reminderId")
+    fun setReminderState(reminderId: String, isActive: Boolean)
 }

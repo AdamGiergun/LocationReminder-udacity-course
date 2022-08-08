@@ -16,6 +16,8 @@ import androidx.work.WorkManager
  *
  */
 
+private const val UNIQUE_WORK_NAME = "GeofenceTransitionsWorker"
+
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
