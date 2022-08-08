@@ -20,8 +20,8 @@ enum class LocationState {
 
 val locationRequest
     get() = LocationRequest.create().apply {
-        interval = 2000
-        fastestInterval = 1000
+        interval = 5000
+        fastestInterval = 2000
         priority = Priority.PRIORITY_HIGH_ACCURACY
     }
 
