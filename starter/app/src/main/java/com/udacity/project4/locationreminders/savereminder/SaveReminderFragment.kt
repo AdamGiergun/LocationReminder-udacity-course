@@ -105,6 +105,7 @@ class SaveReminderFragment : BaseFragment() {
                 addOnSuccessListener {
                     _viewModel.showSnackBar.value = "Geofence added"
                     _viewModel.id.value = geofencingRequest.geofences.first().requestId
+                    _viewModel.active.value = true
                     _viewModel.validateAndSaveReminder()
                 }
                 addOnFailureListener { exception ->
