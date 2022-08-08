@@ -52,4 +52,7 @@
     <string name="info_about_selecting_location">Select some location for the reminder by pointing it (and holding it for a moment if it\'s not named).</string>
     <string name="geofence_request_too_frequent">Geofences added too frequently.</string>
     <string name="undisclosed_location">Undisclosed location</string>
+    <string name="title">Title:</string>
+    <string name="description">Description:</string>
+    <string name="location">Location:</string>
 </resources>
