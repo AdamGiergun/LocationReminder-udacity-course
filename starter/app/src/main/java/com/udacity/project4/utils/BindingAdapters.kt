@@ -1,6 +1,8 @@
 package com.udacity.project4.utils
 
 import android.view.View
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
@@ -43,5 +45,16 @@ object BindingAdapters {
                     view.fadeOut()
             }
         }
+    }
+
+    @BindingAdapter("android:titleColor")
+    @JvmStatic
+    fun TextView.setTitleColor(active: Boolean) {
+        setTextColor(
+            if (active)
+                ContextCompat.getColor(context, android.R.color.black)
+            else
+                ContextCompat.getColor(context, android.R.color.darker_gray)
+        )
     }
 }
