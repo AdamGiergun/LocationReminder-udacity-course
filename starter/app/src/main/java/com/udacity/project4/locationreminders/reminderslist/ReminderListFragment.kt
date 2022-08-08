@@ -70,7 +70,6 @@ class ReminderListFragment : BaseFragment(), MenuProvider {
         val adapter = RemindersListAdapter {
         }
 
-//       TODO: setup the recycler view using the extension function
         binding.reminderssRecyclerView.setup(adapter)
     }
 

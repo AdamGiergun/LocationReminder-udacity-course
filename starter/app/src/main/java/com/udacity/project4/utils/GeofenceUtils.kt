@@ -1,6 +1,5 @@
 package com.udacity.project4.utils
 
-import android.app.Activity
 import android.content.Context
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
@@ -49,5 +48,5 @@ fun getGeofencingRequest(latitude: Double, longitude: Double): GeofencingRequest
         .build()
 }
 
-fun getGeofencingClient(activity: Activity) =
-    LocationServices.getGeofencingClient(activity)
+fun getGeofencingClient(context: Context) =
+    LocationServices.getGeofencingClient(context)
