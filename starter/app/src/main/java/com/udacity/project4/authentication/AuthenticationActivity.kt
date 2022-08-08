@@ -54,6 +54,10 @@ class AuthenticationActivity : AppCompatActivity() {
                 AuthenticationViewModel.AuthenticationState.AUTHENTICATED -> {
                     startRemindersActivity()
                 }
+                AuthenticationViewModel.AuthenticationState.UNAUTHENTICATED -> {
+                    binding.authText.text =
+                        getString(R.string.unauthenticated)
+                }
                 else -> {
                     binding.authText.text =
                         getString(R.string.authentication_failed)

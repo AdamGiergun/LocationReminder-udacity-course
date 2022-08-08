@@ -55,4 +55,6 @@
     <string name="title">Title:</string>
     <string name="description">Description:</string>
     <string name="location">Location:</string>
+    <string name="unauthenticated">User not authenticated</string>
+    <string name="add_location_reminder_button">Add location reminder button</string>
 </resources>
