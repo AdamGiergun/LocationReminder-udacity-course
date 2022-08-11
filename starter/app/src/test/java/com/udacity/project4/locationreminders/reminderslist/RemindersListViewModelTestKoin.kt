@@ -1,45 +1,60 @@
 package com.udacity.project4.locationreminders.reminderslist
 
-import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.udacity.project4.locationreminders.data.FakeDataSource
+import com.udacity.project4.locationreminders.data.ReminderDataSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.nullValue
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.loadKoinModules
+import org.koin.core.context.unloadKoinModules
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
 @ExperimentalCoroutinesApi
-class RemindersListViewModelTest {
+class RemindersListViewModelTestKoin : KoinTest {
 
-    // Executes each task synchronously using Architecture Components.
+    private val viewModelModule = module {
+        single {
+            RemindersListViewModel(
+                get(),
+                get() as ReminderDataSource
+            )
+        }
+
+        // warning about useless cast is wrong, it's needed
+        @Suppress("USELESS_CAST")
+        single { FakeDataSource() as ReminderDataSource }
+    }
+
+    //     Executes each task synchronously using Architecture Components.
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
-    private lateinit var remindersListViewModel: RemindersListViewModel
-    private lateinit var fakeDataSource: FakeDataSource
-    private lateinit var app: Application
-
     @Before
-    fun setup() {
-        // Initialise the repository with no tasks.
-        fakeDataSource = FakeDataSource()
-        app = ApplicationProvider.getApplicationContext()
-        remindersListViewModel = RemindersListViewModel(
-            app,
-            fakeDataSource
-        )
+    fun setUp() {
+        loadKoinModules(viewModelModule)
+    }
+
+    @After
+    fun tearDown() {
+        unloadKoinModules(viewModelModule)
     }
 
     @Test
     fun test() = runTest {
+        val remindersListViewModel: RemindersListViewModel by inject()
+
         remindersListViewModel.loadReminders()
 
         assertThat(
@@ -49,11 +64,13 @@ class RemindersListViewModelTest {
 
         assertThat(
             remindersListViewModel.showLoading.value,
-        `is`(false))
+            `is`(false)
+        )
 
         assertThat(
             remindersListViewModel.showSnackBar.value,
-            `is`(nullValue()))
+            `is`(nullValue())
+        )
 
         assertThat(
             remindersListViewModel.showNoData.value,
