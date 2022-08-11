@@ -8,32 +8,16 @@ class FakeDataSource : ReminderDataSource {
 
 //    TODO: Create a fake data source to act as a double to the real data source
 
+    private val listOfReminders = mutableListOf<ReminderDTO>()
+
     override suspend fun getReminders(): Result<List<ReminderDTO>> =
-            Result.Success(
-                listOf(
-                    ReminderDTO(
-                        "test1",
-                        "test1",
-                        "test1",
-                        0.0,
-                        0.0,
-                        true,
-                        "test1"
-                    ),
-                    ReminderDTO(
-                        "test2",
-                        "test2",
-                        "test2",
-                        180.0,
-                        180.0,
-                        false,
-                        "test2"
-                    )
-                )
-            )
+        if (listOfReminders.isNotEmpty())
+            Result.Success(listOfReminders)
+        else
+            Result.Error("No reminders")
 
     override suspend fun saveReminder(reminder: ReminderDTO) {
-        TODO("save the reminder")
+        listOfReminders.add(reminder)
     }
 
     override suspend fun getReminder(id: String): Result<ReminderDTO> {

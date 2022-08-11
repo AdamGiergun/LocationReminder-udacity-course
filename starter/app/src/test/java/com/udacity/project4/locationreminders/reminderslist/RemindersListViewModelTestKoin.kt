@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.udacity.project4.getOrAwaitValue
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.ReminderDataSource
+import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert.assertThat
@@ -22,6 +23,9 @@ import java.util.concurrent.TimeoutException
 @ExperimentalCoroutinesApi
 class RemindersListViewModelTestKoin : KoinTest {
 
+    private val fakeDataSource: ReminderDataSource by inject()
+    private val remindersListViewModel: RemindersListViewModel by inject()
+
     private val viewModelModule = module {
         single {
             RemindersListViewModel(
@@ -31,8 +35,7 @@ class RemindersListViewModelTestKoin : KoinTest {
         }
 
         // warning about useless cast is wrong, it's needed
-        @Suppress("USELESS_CAST")
-        single { FakeDataSource() as ReminderDataSource }
+        single<ReminderDataSource> { FakeDataSource() }
     }
 
     //     Executes each task synchronously using Architecture Components.
@@ -51,7 +54,28 @@ class RemindersListViewModelTestKoin : KoinTest {
 
     @Test
     fun test() = runTest {
-        val remindersListViewModel: RemindersListViewModel by inject()
+        listOf(
+            ReminderDTO(
+                "test1",
+                "test1",
+                "test1",
+                0.0,
+                0.0,
+                true,
+                "test1"
+            ),
+            ReminderDTO(
+                "test2",
+                "test2",
+                "test2",
+                180.0,
+                180.0,
+                false,
+                "test2"
+            )
+        ).forEach {
+            fakeDataSource.saveReminder(it)
+        }
 
         remindersListViewModel.loadReminders()
 

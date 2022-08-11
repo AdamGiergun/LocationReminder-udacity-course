@@ -6,11 +6,11 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.udacity.project4.getOrAwaitValue
 import com.udacity.project4.locationreminders.data.FakeDataSource
+import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.nullValue
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -32,7 +32,6 @@ class RemindersListViewModelTest {
 
     @Before
     fun setup() {
-        // Initialise the repository with no tasks.
         fakeDataSource = FakeDataSource()
         app = ApplicationProvider.getApplicationContext()
         remindersListViewModel = RemindersListViewModel(
@@ -43,6 +42,29 @@ class RemindersListViewModelTest {
 
     @Test
     fun test() = runTest {
+        listOf(
+            ReminderDTO(
+                "test1",
+                "test1",
+                "test1",
+                0.0,
+                0.0,
+                true,
+                "test1"
+            ),
+            ReminderDTO(
+                "test2",
+                "test2",
+                "test2",
+                180.0,
+                180.0,
+                false,
+                "test2"
+            )
+        ).forEach {
+            fakeDataSource.saveReminder(it)
+        }
+
         remindersListViewModel.loadReminders()
 
         val remindersList = remindersListViewModel.remindersList.getOrAwaitValue()
