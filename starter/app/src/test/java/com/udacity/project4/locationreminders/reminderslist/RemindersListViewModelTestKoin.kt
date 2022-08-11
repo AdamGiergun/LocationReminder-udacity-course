@@ -2,14 +2,13 @@ package com.udacity.project4.locationreminders.reminderslist
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.common.truth.Truth
 import com.udacity.project4.getOrAwaitValue
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.`is`
 import org.junit.*
 import org.junit.runner.RunWith
 import org.koin.core.context.loadKoinModules
@@ -80,19 +79,19 @@ class RemindersListViewModelTestKoin : KoinTest {
         remindersListViewModel.loadReminders()
 
         val remindersList = remindersListViewModel.remindersList.getOrAwaitValue()
-        assertThat(remindersList.size, `is`(2))
+        Truth.assertThat(remindersList.size).isEqualTo(2)
 
         val showLoading = remindersListViewModel.showLoading.getOrAwaitValue()
-        assertThat(showLoading, `is`(false))
+        Truth.assertThat(showLoading).isEqualTo(false)
 
         try {
             remindersListViewModel.showSnackBar.getOrAwaitValue()
             Assert.fail()
         } catch (e: Exception) {
-            assertThat(e is TimeoutException, `is`(true))
+            Truth.assertThat(e is TimeoutException).isEqualTo(true)
         }
 
         val showNoData = remindersListViewModel.showNoData.getOrAwaitValue()
-        assertThat(showNoData, `is`(false))
+        Truth.assertThat(showNoData).isEqualTo(false)
     }
 }
