@@ -2,7 +2,7 @@ package com.udacity.project4.locationreminders.reminderslist
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.udacity.project4.getOrAwaitValue
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.ReminderDataSource
@@ -48,7 +48,6 @@ class RemindersListViewModelTest : KoinTest {
 
     @After
     fun tearDown() {
-//        unloadKoinModules(viewModelModule)
         stopKoin()
     }
 
@@ -80,19 +79,19 @@ class RemindersListViewModelTest : KoinTest {
         remindersListViewModel.loadReminders()
 
         val remindersList = remindersListViewModel.remindersList.getOrAwaitValue()
-        Truth.assertThat(remindersList.size).isEqualTo(2)
+        assertThat(remindersList.size).isEqualTo(2)
 
         val showLoading = remindersListViewModel.showLoading.getOrAwaitValue()
-        Truth.assertThat(showLoading).isEqualTo(false)
+        assertThat(showLoading).isEqualTo(false)
 
         try {
             remindersListViewModel.showSnackBar.getOrAwaitValue()
             Assert.fail()
         } catch (e: Exception) {
-            Truth.assertThat(e is TimeoutException).isEqualTo(true)
+            assertThat(e is TimeoutException).isEqualTo(true)
         }
 
         val showNoData = remindersListViewModel.showNoData.getOrAwaitValue()
-        Truth.assertThat(showNoData).isEqualTo(false)
+        assertThat(showNoData).isEqualTo(false)
     }
 }

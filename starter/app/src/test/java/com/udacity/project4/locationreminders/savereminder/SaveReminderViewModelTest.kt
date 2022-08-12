@@ -54,7 +54,6 @@ class SaveReminderViewModelTest : KoinTest {
 
     @After
     fun tearDown() {
-        //unloadKoinModules(viewModelModule)
         stopKoin()
     }
 
