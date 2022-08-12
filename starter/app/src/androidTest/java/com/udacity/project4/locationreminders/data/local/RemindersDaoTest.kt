@@ -3,28 +3,113 @@ package com.udacity.project4.locationreminders.data.local
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SmallTest;
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SmallTest
+import com.google.common.truth.Truth.assertThat
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.runner.RunWith;
-
-import kotlinx.coroutines.ExperimentalCoroutinesApi;
-import kotlinx.coroutines.test.runBlockingTest
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.notNullValue
-import org.hamcrest.MatcherAssert.assertThat
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
+//Unit test the DAO
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
-//Unit test the DAO
 @SmallTest
 class RemindersDaoTest {
 
-//    TODO: Add testing implementation to the RemindersDao.kt
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
 
+    private lateinit var database: RemindersDatabase
+
+    @Before
+    fun initDb() {
+        database = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            RemindersDatabase::class.java
+        ).build()
+    }
+
+    @After
+    fun closeDb() = database.close()
+
+    @Test
+    fun insertReminderAndGetById() = runTest {
+        // GIVEN - Insert a reminder
+        val reminder = ReminderDataItem(
+            "title1",
+            "desc1",
+            "location1",
+            1.0,
+            2.0,
+            true
+        )
+        database.reminderDao().saveReminder(
+            ReminderDTO(
+                reminder.title,
+                reminder.description,
+                reminder.location,
+                reminder.latitude,
+                reminder.longitude,
+                reminder.active,
+                reminder.id
+            )
+        )
+
+        // WHEN - Get the reminder by id from the database
+        val loaded = database.reminderDao().getReminderById(reminder.id)
+
+        // THEN - The loaded data contains the expected values
+        assertThat(loaded).isNotNull()
+        assertThat(loaded?.id).isEqualTo(reminder.id)
+        assertThat(loaded?.title).isEqualTo(reminder.title)
+        assertThat(loaded?.description).isEqualTo(reminder.description)
+        assertThat(loaded?.location).isEqualTo(reminder.location)
+        assertThat(loaded?.latitude).isEqualTo(reminder.latitude)
+        assertThat(loaded?.longitude).isEqualTo(reminder.longitude)
+        assertThat(loaded?.isActive).isEqualTo(reminder.active)
+    }
+
+    @Test
+    fun updateReminderActivityAndGetById() = runTest {
+        // GIVEN - Insert a reminder
+        val reminder = ReminderDataItem(
+            "title1",
+            "desc1",
+            "location1",
+            1.0,
+            2.0,
+            true
+        )
+        database.reminderDao().saveReminder(
+            ReminderDTO(
+                reminder.title,
+                reminder.description,
+                reminder.location,
+                reminder.latitude,
+                reminder.longitude,
+                reminder.active,
+                reminder.id
+            )
+        )
+
+        // WHEN - The reminder is deactivated
+        database.reminderDao().setReminderState(reminder.id, false)
+
+        // THEN - The loaded data contains the expected values
+        val loaded = database.reminderDao().getReminderById(reminder.id)
+        assertThat(loaded).isNotNull()
+        assertThat(loaded?.id).isEqualTo(reminder.id)
+        assertThat(loaded?.title).isEqualTo(reminder.title)
+        assertThat(loaded?.description).isEqualTo(reminder.description)
+        assertThat(loaded?.location).isEqualTo(reminder.location)
+        assertThat(loaded?.latitude).isEqualTo(reminder.latitude)
+        assertThat(loaded?.longitude).isEqualTo(reminder.longitude)
+        assertThat(loaded?.isActive).isEqualTo(false)
+    }
 }
