@@ -117,7 +117,10 @@ dependencies {
     androidTestImplementation "androidx.arch.core:core-testing:$archTestingVersion"
     androidTestImplementation "org.robolectric:annotations:$robolectricVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
+    // workaround for bug in version 3.4.0 of espresso-contrib
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:$espressoVersion") {
+        exclude group: 'org.checkerframework', module: 'checker'
+    }
     androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
     androidTestImplementation "androidx.test.espresso.idling:idling-concurrent:$espressoVersion"
     androidTestImplementation "junit:junit:$junit4Version"
