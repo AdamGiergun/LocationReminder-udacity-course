@@ -9,7 +9,6 @@ import com.google.common.truth.Truth.assertThat
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -38,8 +37,7 @@ class RemindersLocalRepositoryTest {
         ).build()
 
         repository = RemindersLocalRepository(
-            database.reminderDao(),
-            Dispatchers.Default
+            database.reminderDao()
         )
     }
 
@@ -166,27 +164,19 @@ class RemindersLocalRepositoryTest {
         }
 
         // WHEN - Get the reminders from the database
-        var result = repository.getReminders()
-        // THEN - check result
-        if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<List<ReminderDTO>>) {
+        var result =
+            repository.getReminders() as com.udacity.project4.locationreminders.data.dto.Result.Success
 
-            // THEN - check count
-            var loaded = result.data
-            assertThat(loaded.size).isEqualTo(reminders.size)
+        // THEN - check count
+        var loaded = result.data
+        assertThat(loaded.size).isEqualTo(reminders.size)
 
-            // WHEN - delete all reminders
-            repository.deleteAllReminders()
-            result = repository.getReminders()
-            if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<List<ReminderDTO>>) {
-                //THEN - reminders count in db is zero
-                loaded = result.data
-                assertThat(loaded.size).isEqualTo(0)
-            } else {
-                assert(false)
-            }
-        } else {
-            assert(false)
-        }
+        // WHEN - delete all reminders
+        repository.deleteAllReminders()
+        result =
+            repository.getReminders() as com.udacity.project4.locationreminders.data.dto.Result.Success<List<ReminderDTO>>
+        //THEN - reminders count in db is zero
+        loaded = result.data
+        assertThat(loaded.size).isEqualTo(0)
     }
-
 }
