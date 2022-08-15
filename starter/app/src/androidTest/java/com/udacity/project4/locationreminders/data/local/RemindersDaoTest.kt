@@ -39,7 +39,7 @@ class RemindersDaoTest {
     fun closeDb() = database.close()
 
     @Test
-    fun insertReminderAndGetById() = runTest {
+    fun saveReminderAndGetById() = runTest {
         // GIVEN - Insert a reminder
         val reminder = ReminderDataItem(
             "title1",
@@ -76,7 +76,7 @@ class RemindersDaoTest {
     }
 
     @Test
-    fun updateReminderActivityAndGetById() = runTest {
+    fun updateReminderStateAndGetById() = runTest {
         // GIVEN - Insert a reminder
         val reminder = ReminderDataItem(
             "title1",
@@ -111,5 +111,62 @@ class RemindersDaoTest {
         assertThat(loaded?.latitude).isEqualTo(reminder.latitude)
         assertThat(loaded?.longitude).isEqualTo(reminder.longitude)
         assertThat(loaded?.isActive).isEqualTo(false)
+    }
+
+    @Test
+    fun saveMultipleRemindersAndDeleteAll() = runTest {
+        // GIVEN - Insert reminders
+        val reminders = listOf(
+            ReminderDataItem(
+                "title2",
+                "desc2",
+                "location2",
+                2.0,
+                3.0,
+                true
+            ),
+            ReminderDataItem(
+                "title1",
+                "desc1",
+                "location1",
+                1.0,
+                2.0,
+                true
+            ),
+            ReminderDataItem(
+                "title3",
+                "desc3",
+                "location3",
+                3.0,
+                4.0,
+                true
+            )
+        )
+
+        reminders.forEach { reminder ->
+            database.reminderDao().saveReminder(
+                ReminderDTO(
+                    reminder.title,
+                    reminder.description,
+                    reminder.location,
+                    reminder.latitude,
+                    reminder.longitude,
+                    reminder.active,
+                    reminder.id
+                )
+            )
+        }
+
+        // WHEN - Get the reminders from the database
+        var loaded = database.reminderDao().getReminders()
+        // THEN - check count
+        assertThat(loaded.size).isEqualTo(reminders.size)
+
+        // WHEN - delete all reminders
+        database.reminderDao().deleteAllReminders()
+        loaded = database.reminderDao().getReminders()
+
+        //THEN - reminders count in db is zero
+        assertThat(loaded.size).isEqualTo(0)
     }
 }
