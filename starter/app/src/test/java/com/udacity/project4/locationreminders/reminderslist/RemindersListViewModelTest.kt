@@ -33,7 +33,6 @@ class RemindersListViewModelTest : KoinTest {
             )
         }
 
-        // warning about useless cast is wrong, it's needed
         single<ReminderDataSource> { FakeDataSource() }
     }
 

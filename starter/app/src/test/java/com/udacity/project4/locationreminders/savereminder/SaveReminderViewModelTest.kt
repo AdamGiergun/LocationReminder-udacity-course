@@ -38,9 +38,7 @@ class SaveReminderViewModelTest : KoinTest {
             )
         }
 
-        // warning about useless cast is wrong, it's needed
-        @Suppress("USELESS_CAST")
-        single { FakeDataSource() as ReminderDataSource }
+        single<ReminderDataSource> { FakeDataSource() }
     }
 
     //     Executes each task synchronously using Architecture Components.
