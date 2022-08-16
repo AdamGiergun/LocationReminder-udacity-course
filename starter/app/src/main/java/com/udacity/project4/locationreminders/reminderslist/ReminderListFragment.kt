@@ -70,7 +70,7 @@ class ReminderListFragment : BaseFragment(), MenuProvider {
         val adapter = RemindersListAdapter {
         }
 
-        binding.reminderssRecyclerView.setup(adapter)
+        binding.remindersRecyclerView.setup(adapter)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
