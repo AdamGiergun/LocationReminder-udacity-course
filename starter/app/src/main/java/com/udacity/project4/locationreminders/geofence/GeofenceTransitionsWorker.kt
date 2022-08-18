@@ -16,7 +16,7 @@ import com.udacity.project4.utils.getGeofencingClient
 import com.udacity.project4.utils.sendNotification
 import org.koin.java.KoinJavaComponent.inject
 
-private const val TAG = "GeofenceTransitionsWorker"
+private const val TAG = "GeofenceTransitionsWrkr"
 const val REQUEST_ID = "requestId"
 private const val UNIQUE_WORK_NAME = "InactivateReminderWorker"
 
