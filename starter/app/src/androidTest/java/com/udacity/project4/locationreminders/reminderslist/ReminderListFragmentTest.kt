@@ -63,19 +63,10 @@ class ReminderListFragmentTest : KoinTest {
         unloadKoinModules(viewModelModule)
     }
 
-    @Test
-    fun emptyDataStore_snackbarShown() = runTest(StandardTestDispatcher()) {
-        launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
-        val snackbar = KView {
-            withId(com.google.android.material.R.id.snackbar_text)
-        }
-        snackbar.isDisplayed()
-    }
-
-    //    TODO: test the navigation of the fragments.
+    // test the app navigation
     @Test
     fun clickAddReminderFAB_navigateToSaveReminderFragment() = runTest(StandardTestDispatcher()) {
-        //do it for no snackbar error info hiding button for Espresso
+        //do it for no snackbar error info hiding button from Espresso
         fakeDataSource.saveReminder(
             ReminderDTO(
                 "test1",
@@ -105,12 +96,81 @@ class ReminderListFragmentTest : KoinTest {
         )
     }
 
-    //    TODO: test the displayed data on the UI.
+    @Test
+    fun clickListItem_toNavigateToReminderDetails() = runTest(StandardTestDispatcher()) {
+        val title = "title1"
+        val reminder = ReminderDataItem(
+            title,
+            "test1",
+            "test1",
+            0.0,
+            0.0,
+            true,
+            "test1"
+        )
+        reminder.run {
+            fakeDataSource.saveReminder(
+                ReminderDTO(
+                    title,
+                    description,
+                    location,
+                    latitude,
+                    longitude,
+                    active,
+                    id
+                )
+            )
+        }
+
+        // GIVEN: List of items on the reminders screen
+        val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
+        val navController = mock(NavController::class.java)
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+        }
+
+        // WHEN: click on the list item
+        onView(withText(title)).perform(click())
+
+        // THEN - Verify that we navigate to the ReminderDescriptionActivity
+        advanceUntilIdle()
+        verify(navController).navigate(
+            ReminderListFragmentDirections.actionReminderListFragmentToReminderDescriptionActivity(reminder)
+        )
+    }
+
+    // test the displayed data on the UI.
     @Test(expected = PerformException::class)
     fun itemWithText_doesNotExist() = runTest(StandardTestDispatcher()) {
+        val list = listOf(
+            ReminderDTO(
+                "test1",
+                "test1",
+                "test1",
+                0.0,
+                0.0,
+                true,
+                "test1"
+            ),
+            ReminderDTO(
+                "test2",
+                "test2",
+                "test2",
+                180.0,
+                180.0,
+                false,
+                "test2"
+            )
+        )
+
+        list.forEach {
+            fakeDataSource.saveReminder(it)
+        }
+        // GIVEN: List of items on the reminders screen
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
-        // Attempt to scroll to an item that contains the special text.
-        onView(withId(R.id.remindersRecyclerView)) // scrollTo will fail the test if no item matches.
+        // WHEN: Attempt to scroll to an item that contains the special text (not present in the list).
+        // THEN: scrollTo will fail if no item matches.
+        onView(withId(R.id.remindersRecyclerView))
             .perform(
                 RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(
                     hasDescendant(withText("not in the list"))
@@ -144,10 +204,12 @@ class ReminderListFragmentTest : KoinTest {
         list.forEach {
             fakeDataSource.saveReminder(it)
         }
+        // GIVEN: List of items on the reminders screen
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
-        // Attempt to scroll to an item that contains the special text.
+        // WHEN: Attempt to scroll to items that contain the special text.
+        // THEN: scrollTo will succeed
         list.forEach { reminderDTO ->
-            onView(withId(R.id.remindersRecyclerView)).run {// scrollTo will fail the test if no item matches.
+            onView(withId(R.id.remindersRecyclerView)).run {
                 perform(
                     RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(
                         hasDescendant(withText(reminderDTO.title))
@@ -167,6 +229,17 @@ class ReminderListFragmentTest : KoinTest {
         }
     }
 
+    //    TODO: add testing for the error messages.
+    @Test
+    fun emptyDataStore_errorSnackbarShown() = runTest(StandardTestDispatcher()) {
+        // GIVEN empty datastore
+        // WHEN fragment starts
+        launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
 
-//    TODO: add testing for the error messages.
+        // THAN snackbar is shown
+        val snackbar = KView {
+            withId(com.google.android.material.R.id.snackbar_text)
+        }
+        snackbar.isDisplayed()
+    }
 }
