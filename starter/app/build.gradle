@@ -36,14 +36,11 @@ android {
             useJUnitPlatform()
         }
     }
-    //dataBinding {
-    //    enabled = true
-    //    enabledForTests = true
-    //}
     buildFeatures {
         dataBinding true
         viewBinding true
     }
+    namespace 'com.udacity.project4'
 }
 
 dependencies {
