@@ -59,17 +59,18 @@ class ReminderListFragment : BaseFragment(), MenuProvider {
 
     private fun navigateToAddReminder() {
         //use the navigationCommand live data to navigate between the fragments
-        _viewModel.navigationCommand.postValue(
+        _viewModel.navigationCommand.value =
             NavigationCommand.To(
                 ReminderListFragmentDirections.toSaveReminder()
             )
-        )
     }
 
     private fun setupRecyclerView() {
         val adapter = RemindersListAdapter {
             findNavController().navigate(
-                ReminderListFragmentDirections.actionReminderListFragmentToReminderDescriptionActivity(it)
+                ReminderListFragmentDirections.actionReminderListFragmentToReminderDescriptionActivity(
+                    it
+                )
             )
         }
 
