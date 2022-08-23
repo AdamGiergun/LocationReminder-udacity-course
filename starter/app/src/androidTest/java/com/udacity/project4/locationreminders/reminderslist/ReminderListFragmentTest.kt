@@ -18,8 +18,6 @@ import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import com.udacity.project4.util.DataBindingIdlingResource
-import com.udacity.project4.util.monitorFragment
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -43,8 +41,6 @@ import org.mockito.Mockito.mock
 @MediumTest
 class ReminderListFragmentTest : KoinTest {
 
-    private val dataBindingIdlingResource = DataBindingIdlingResource()
-
     private val fakeDataSource: ReminderDataSource by inject()
 
     private val viewModelModule = module {
@@ -63,6 +59,7 @@ class ReminderListFragmentTest : KoinTest {
     fun tearDown() {
         unloadKoinModules(viewModelModule)
     }
+
 
     // test the displayed data on the UI.
     @Test(expected = PerformException::class)
@@ -93,7 +90,6 @@ class ReminderListFragmentTest : KoinTest {
         }
         // GIVEN: List of items on the reminders screen
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme).run {
-            dataBindingIdlingResource.monitorFragment(this)
             // WHEN: Attempt to scroll to an item that contains the special text (not present in the list).
             // THEN: scrollTo will fail if no item matches.
             onView(withId(R.id.remindersRecyclerView))
@@ -133,7 +129,6 @@ class ReminderListFragmentTest : KoinTest {
         }
         // GIVEN: List of items on the reminders screen
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme).run {
-            dataBindingIdlingResource.monitorFragment(this)
             // WHEN: Attempt to scroll to items that contain the special text.
             // THEN: scrollTo will succeed
             list.forEach { reminderDTO ->
