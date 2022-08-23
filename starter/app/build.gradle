@@ -41,6 +41,10 @@ android {
         viewBinding true
     }
     namespace 'com.udacity.project4'
+    packagingOptions {
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/LICENSE-notice.md'
+    }
 }
 
 dependencies {
@@ -87,6 +91,8 @@ dependencies {
     testImplementation "io.insert-koin:koin-test-junit4:$koinVersion"
     testImplementation "io.insert-koin:koin-test-junit5:$koinVersion"
     androidTestImplementation("io.insert-koin:koin-test:$koinVersion") { exclude group: 'org.mockito' }
+    androidTestImplementation "io.insert-koin:koin-test-junit4:$koinVersion"
+    androidTestImplementation "io.insert-koin:koin-test-junit5:$koinVersion"
 
     // Dependencies for local unit tests
     testImplementation "junit:junit:$junit4Version"
