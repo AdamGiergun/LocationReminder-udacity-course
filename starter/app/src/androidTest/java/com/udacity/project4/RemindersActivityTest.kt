@@ -7,7 +7,8 @@ import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
@@ -106,7 +107,7 @@ class RemindersActivityTest :
 
 
     @Test
-    fun editReminder(): Unit = runBlocking {
+    fun editReminder(): Unit = runTest {
         val reminder = ReminderDataItem(
             "title1",
             "description1",
@@ -156,10 +157,15 @@ class RemindersActivityTest :
             onView(withId(R.id.selectLocation)).perform(click())
             onView(withId(R.id.map)).perform(longClick())
             onView(withText("OK")).perform(click())
-            Thread.sleep(2100)
+
             onView(withId(R.id.saveReminder)).perform(click())
-            Thread.sleep(2100)
-//            onView(withText("TITLE2")).perform(click())
+            //Thread.sleep(2100)
+            onView(withText("TITLE2")).perform(click())
+            onView(withId(R.id.reminder_title))
+                .check(ViewAssertions.matches(withText("TITLE2")))
+            onView(withId(R.id.reminder_description))
+                .check(ViewAssertions.matches(withText("DESCRIPTION2")))
+//            Thread.sleep(3000)
 
 //            onView(withId(R.id.menu_delete)).perform(click())
 ////            try {
