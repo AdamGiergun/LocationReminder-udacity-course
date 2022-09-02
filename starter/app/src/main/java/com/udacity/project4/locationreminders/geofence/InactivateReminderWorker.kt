@@ -6,7 +6,7 @@ import androidx.work.*
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import org.koin.java.KoinJavaComponent.inject
 
-private const val TAG = "InactivateReminderWorker"
+private const val TAG = "InactivateReminderW"
 
 class InactivateReminderWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
