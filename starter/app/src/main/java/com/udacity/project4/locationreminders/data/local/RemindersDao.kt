@@ -1,10 +1,6 @@
 package com.udacity.project4.locationreminders.data.local
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 
 /**
@@ -26,6 +22,13 @@ interface RemindersDao {
     fun getReminderById(reminderId: String): ReminderDTO?
 
     /**
+     * @param geofenceId the id of the reminder's geofence
+     * @return the reminder object with the geofenceId
+     */
+    @Query("SELECT * FROM reminders where geofence_id = :geofenceId")
+    fun getReminderByGeofenceId(geofenceId: String): ReminderDTO?
+
+    /**
      * Insert a reminder in the database. If the reminder already exists, replace it.
      *
      * @param reminder the reminder to be inserted.
@@ -39,6 +42,12 @@ interface RemindersDao {
     @Query("DELETE FROM reminders")
     fun deleteAllReminders()
 
-    @Query("UPDATE reminders SET is_active=:isActive WHERE entry_id=:reminderId")
-    fun setReminderState(reminderId: String, isActive: Boolean)
+    @Delete
+    fun deleteReminder(reminder: ReminderDTO)
+
+    @Query("UPDATE reminders SET geofence_id=null WHERE geofence_id=:geofenceId")
+    fun resetGeofenceId(geofenceId: String)
+
+    @Update
+    fun updateReminder(reminder: ReminderDTO)
 }

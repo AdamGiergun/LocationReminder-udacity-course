@@ -5,13 +5,23 @@ import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 
 fun ReminderDataItem.toDTO(): ReminderDTO =
     this.run {
-        ReminderDTO(
-            title,
-            description,
-            location,
-            latitude,
-            longitude,
-            active,
-            id
-        )
+        if (id == null)
+            ReminderDTO(
+                title,
+                description,
+                location,
+                latitude,
+                longitude,
+                geofenceId
+            )
+        else
+            ReminderDTO(
+                title,
+                description,
+                location,
+                latitude,
+                longitude,
+                geofenceId,
+                id
+            )
     }

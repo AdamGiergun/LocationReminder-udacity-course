@@ -53,7 +53,8 @@ class RemindersLocalRepositoryTest {
             "location1",
             1.0,
             2.0,
-            true
+            "test_geofence_id1",
+            "test_id1"
         )
         repository.saveReminder(
             ReminderDTO(
@@ -62,13 +63,13 @@ class RemindersLocalRepositoryTest {
                 reminder.location,
                 reminder.latitude,
                 reminder.longitude,
-                reminder.active,
-                reminder.id
+                reminder.geofenceId,
+                reminder.id ?: ""
             )
         )
 
         // WHEN - Get the reminder by id from the database
-        val loaded = database.reminderDao().getReminderById(reminder.id)
+        val loaded = database.reminderDao().getReminderById("test_id1")
 
         // THEN - The loaded data contains the expected values
         assertThat(loaded).isNotNull()
@@ -78,7 +79,7 @@ class RemindersLocalRepositoryTest {
         assertThat(loaded?.location).isEqualTo(reminder.location)
         assertThat(loaded?.latitude).isEqualTo(reminder.latitude)
         assertThat(loaded?.longitude).isEqualTo(reminder.longitude)
-        assertThat(loaded?.isActive).isEqualTo(reminder.active)
+        assertThat(loaded?.geofenceId).isEqualTo(reminder.geofenceId)
     }
 
     @Test
@@ -90,7 +91,8 @@ class RemindersLocalRepositoryTest {
             "location1",
             1.0,
             2.0,
-            true
+            "test_geofence_id1",
+            "test_id1"
         )
         repository.saveReminder(
             ReminderDTO(
@@ -99,16 +101,18 @@ class RemindersLocalRepositoryTest {
                 reminder.location,
                 reminder.latitude,
                 reminder.longitude,
-                reminder.active,
-                reminder.id
+                reminder.geofenceId,
+                reminder.id ?: ""
             )
         )
 
         // WHEN - The reminder is deactivated
-        repository.setReminderState(reminder.id, false)
+        reminder.geofenceId?.let {
+            repository.resetGeofenceId(it)
+        }
 
         // THEN - The loaded data contains the expected values
-        val loaded = database.reminderDao().getReminderById(reminder.id)
+        val loaded = database.reminderDao().getReminderById("test_id1")
         assertThat(loaded).isNotNull()
         assertThat(loaded?.id).isEqualTo(reminder.id)
         assertThat(loaded?.title).isEqualTo(reminder.title)
@@ -116,7 +120,7 @@ class RemindersLocalRepositoryTest {
         assertThat(loaded?.location).isEqualTo(reminder.location)
         assertThat(loaded?.latitude).isEqualTo(reminder.latitude)
         assertThat(loaded?.longitude).isEqualTo(reminder.longitude)
-        assertThat(loaded?.isActive).isEqualTo(false)
+        assertThat(loaded?.geofenceId).isEqualTo(null)
     }
 
     @Test
@@ -129,7 +133,8 @@ class RemindersLocalRepositoryTest {
                 "location2",
                 2.0,
                 3.0,
-                true
+                "test_geofence_id2",
+                "test_id2"
             ),
             ReminderDataItem(
                 "title1",
@@ -137,7 +142,8 @@ class RemindersLocalRepositoryTest {
                 "location1",
                 1.0,
                 2.0,
-                true
+                "test_geofence_id1",
+                "test_id1"
             ),
             ReminderDataItem(
                 "title3",
@@ -145,7 +151,8 @@ class RemindersLocalRepositoryTest {
                 "location3",
                 3.0,
                 4.0,
-                true
+                "test_geofence_id3",
+                "test_id3"
             )
         )
 
@@ -157,8 +164,8 @@ class RemindersLocalRepositoryTest {
                     reminder.location,
                     reminder.latitude,
                     reminder.longitude,
-                    reminder.active,
-                    reminder.id
+                    reminder.geofenceId,
+                    reminder.id ?: ""
                 )
             )
         }

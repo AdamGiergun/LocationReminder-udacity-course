@@ -41,12 +41,12 @@ class RemindersLocalRepository(
 
     /**
      * Get a reminder by its id
-     * @param id to be used to get the reminder
+     * @param geofenceId to be used to get the reminder
      * @return Result the holds a Success object with the Reminder or an Error object with the error message
      */
-    override suspend fun getReminder(id: String): Result<ReminderDTO> = withContext(ioDispatcher) {
+    override suspend fun getReminder(geofenceId: String): Result<ReminderDTO> = withContext(ioDispatcher) {
         try {
-            val reminder = remindersDao.getReminderById(id)
+            val reminder = remindersDao.getReminderByGeofenceId(geofenceId)
             if (reminder != null) {
                 return@withContext Result.Success(reminder)
             } else {
@@ -58,14 +58,27 @@ class RemindersLocalRepository(
     }
 
     /**
-     * Update a reminder by its id setting it activity state
-     * @param id to be used to update the reminder
-     * @param isActive to be used to update value of the reminder's field
-     * @return Result the holds a Success object with the Reminder or an Error object with the error message
+     * Reset reminder's geofenceId
+     * @param geofenceId to be reset
      */
-    override suspend fun setReminderState(id: String, isActive: Boolean) {
+    override suspend fun resetGeofenceId(geofenceId: String) {
         withContext(ioDispatcher) {
-            remindersDao.setReminderState(id, isActive)
+            remindersDao.resetGeofenceId(geofenceId)
+        }
+    }
+
+    override suspend fun updateReminder(reminder: ReminderDTO) {
+        withContext(ioDispatcher) {
+            remindersDao.updateReminder(reminder)
+        }
+    }
+
+    /**
+     * Deletes all the reminders in the db
+     */
+    override suspend fun deleteReminder(reminder: ReminderDTO) {
+        withContext(ioDispatcher) {
+            remindersDao.deleteAllReminders()
         }
     }
 

@@ -20,17 +20,30 @@ class FakeDataSource : ReminderDataSource {
         listOfReminders.add(reminder)
     }
 
-    override suspend fun getReminder(id: String): Result<ReminderDTO> {
-        TODO("return the reminder with the id")
+    override suspend fun getReminder(geofenceId: String): Result<ReminderDTO> {
+        return try {
+            val reminder = listOfReminders.first {
+                it.geofenceId == geofenceId
+            }
+            Result.Success(reminder)
+        } catch (e: NoSuchElementException) {
+            Result.Error(e.localizedMessage)
+        }
     }
 
-    override suspend fun setReminderState(id: String, isActive: Boolean) {
+    override suspend fun resetGeofenceId(geofenceId: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateReminder(reminder: ReminderDTO) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteReminder(reminder: ReminderDTO) {
         TODO("Not yet implemented")
     }
 
     override suspend fun deleteAllReminders() {
         TODO("delete all the reminders")
     }
-
-
 }
