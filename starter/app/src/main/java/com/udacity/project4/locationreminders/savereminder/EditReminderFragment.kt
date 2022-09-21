@@ -29,7 +29,7 @@ import com.udacity.project4.utils.getGeofencingRequest
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
-class SaveReminderFragment : BaseFragment() {
+class EditReminderFragment : BaseFragment() {
     //Get the view model this time as a single to be shared with the another fragment
     override val _viewModel: EditReminderViewModel by inject()
     private lateinit var binding: FragmentEditReminderBinding
@@ -63,7 +63,7 @@ class SaveReminderFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentEditReminderBinding.inflate(inflater)
-        val args: SaveReminderFragmentArgs by navArgs()
+        val args: EditReminderFragmentArgs by navArgs()
         args.reminder?.let {
             _viewModel.setReminder(it)
         }
@@ -84,7 +84,7 @@ class SaveReminderFragment : BaseFragment() {
             //            Navigate to another fragment to get the user location
             _viewModel.navigationCommand.value =
                 NavigationCommand.To(
-                    SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment()
+                    EditReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment()
                 )
         }
 

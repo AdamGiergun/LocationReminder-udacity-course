@@ -18,7 +18,7 @@
         android:label="MainActivity" />
     <fragment
         android:id="@+id/saveReminderFragment"
-        android:name="com.udacity.project4.locationreminders.savereminder.SaveReminderFragment"
+        android:name="com.udacity.project4.locationreminders.savereminder.EditReminderFragment"
         android:label="Add Reminder">
         <action
             android:id="@+id/action_saveReminderFragment_to_reminderListFragment"
