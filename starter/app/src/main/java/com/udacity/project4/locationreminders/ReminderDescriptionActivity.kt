@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.navArgs
 import com.udacity.project4.databinding.ActivityReminderDescriptionBinding
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 
@@ -28,14 +27,7 @@ class ReminderDescriptionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         ActivityReminderDescriptionBinding.inflate(layoutInflater).run {
             reminderDataItem =
-                intent.getSerializableExtra(EXTRA_ReminderDataItem).let {
-                    if (it == null) {
-                        val args: ReminderDescriptionActivityArgs by navArgs()
-                        args.reminder
-                    } else {
-                        it as ReminderDataItem
-                    }
-                }
+                intent.getSerializableExtra(EXTRA_ReminderDataItem) as ReminderDataItem
             setContentView(root)
         }
     }

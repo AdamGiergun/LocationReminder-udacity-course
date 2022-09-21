@@ -1,15 +1,18 @@
 package com.udacity.project4.locationreminders.savereminder
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.navigation.fragment.navArgs
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.GeofenceStatusCodes.*
@@ -17,7 +20,7 @@ import com.google.android.gms.location.GeofencingClient
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
-import com.udacity.project4.databinding.FragmentSaveReminderBinding
+import com.udacity.project4.databinding.FragmentEditReminderBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.ACTION_GEOFENCE_EVENT
@@ -28,8 +31,8 @@ import org.koin.android.ext.android.inject
 
 class SaveReminderFragment : BaseFragment() {
     //Get the view model this time as a single to be shared with the another fragment
-    override val _viewModel: SaveReminderViewModel by inject()
-    private lateinit var binding: FragmentSaveReminderBinding
+    override val _viewModel: EditReminderViewModel by inject()
+    private lateinit var binding: FragmentEditReminderBinding
 
     private lateinit var geofencingClient: GeofencingClient
     private val geofencePendingIntent: PendingIntent by lazy {
@@ -41,7 +44,7 @@ class SaveReminderFragment : BaseFragment() {
             requireContext(),
             0,
             intent,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             } else {
                 PendingIntent.FLAG_UPDATE_CURRENT
@@ -59,7 +62,11 @@ class SaveReminderFragment : BaseFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentSaveReminderBinding.inflate(inflater)
+        binding = FragmentEditReminderBinding.inflate(inflater)
+        val args: SaveReminderFragmentArgs by navArgs()
+        args.reminder?.let {
+            _viewModel.setReminder(it)
+        }
 
         setDisplayHomeAsUpEnabled(true)
 
@@ -72,83 +79,108 @@ class SaveReminderFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.lifecycleOwner = this
+        binding.lifecycleOwner = viewLifecycleOwner
         binding.selectLocation.setOnClickListener {
             //            Navigate to another fragment to get the user location
             _viewModel.navigationCommand.value =
-                NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
+                NavigationCommand.To(
+                    SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment()
+                )
         }
 
         binding.saveReminder.setOnClickListener { saveReminder() }
     }
 
+    @SuppressLint("MissingPermission")
     private fun saveReminder() {
-        val title = _viewModel.reminderTitle.value
-        val description = _viewModel.reminderDescription.value
-        val location = _viewModel.reminderSelectedLocationStr.value
-        val latitude = _viewModel.latitude.value
-        val longitude = _viewModel.longitude.value
-
         val reminderData = ReminderDataItem(
-            title,
-            description,
-            location,
-            latitude,
-            longitude
+            _viewModel.reminderTitle.value,
+            _viewModel.reminderDescription.value,
+            _viewModel.reminderSelectedLocationStr.value,
+            _viewModel.reminderLatitude.value,
+            _viewModel.reminderLongitude.value,
+            _viewModel.reminderGeofenceId.value,
+            _viewModel.reminderId
         )
 
         if (_viewModel.validateEnteredData(reminderData)) {
-            val geofencingRequest = getGeofencingRequest(latitude!!, longitude!!)
-            geofencingClient.addGeofences(
-                geofencingRequest,
-                geofencePendingIntent).apply {
-                addOnSuccessListener {
-                    _viewModel.showSnackBar.value = "Geofence added"
-                    _viewModel.id.value = geofencingRequest.geofences.first().requestId
-                    _viewModel.isActive.value = true
-                    _viewModel.validateAndSaveReminder()
-                }
-                addOnFailureListener { exception ->
-                    if (exception is ApiException) {
-                        when (exception.statusCode) {
-                            GEOFENCE_INSUFFICIENT_LOCATION_PERMISSION -> {
-                                if (exception is ResolvableApiException)
-                                    try {
-                                        val intentSenderRequest = IntentSenderRequest
-                                            .Builder(exception.resolution.intentSender)
-                                            .build()
-
-                                        enableLocationRequestLauncher.launch(intentSenderRequest)
-
-                                    } catch (sendEx: IntentSender.SendIntentException) {
-                                        _viewModel.showErrorMessage.value =
-                                            sendEx.localizedMessage
-                                    }
-                            }
-
-                            GEOFENCE_NOT_AVAILABLE ->
-                                _viewModel.showErrorMessage.value =
-                                    getString(R.string.geofence_not_available)
-
-                            GEOFENCE_REQUEST_TOO_FREQUENT ->
-                                _viewModel.showErrorMessage.value =
-                                    getString(R.string.geofence_request_too_frequent)
-
-                            GEOFENCE_TOO_MANY_GEOFENCES ->
-                                _viewModel.showErrorMessage.value =
-                                    getString(R.string.geofence_too_many_geofences)
-
-                            GEOFENCE_TOO_MANY_PENDING_INTENTS ->
-                                _viewModel.showErrorMessage.value =
-                                    getString(R.string.geofence_too_many_pending_intents)
+            if (_viewModel.isLocationChanged) {
+                _viewModel.reminderGeofenceId.value?.let { requestId ->
+                    val logTag = this::class.java.name
+                    _viewModel.reminderGeofenceId.value = null
+                    geofencingClient.removeGeofences(listOf(requestId))
+                        .addOnSuccessListener {
+                            Log.d(logTag, "Geofence removed")
                         }
-                    } else
-                        _viewModel.showErrorMessage.value =
-                            getString(R.string.error_adding_geofence)
+                        .addOnFailureListener { exception ->
+                            handleGeofenceClientException(exception)
+                            Log.d(logTag, "Geofence not removed ${exception.localizedMessage}")
+                        }
                 }
+            }
 
+            if (_viewModel.reminderGeofenceId.value == null) {
+                val geofencingRequest = getGeofencingRequest(
+                    reminderData.latitude!!,
+                    reminderData.longitude!!
+                )
+                geofencingClient.addGeofences(
+                    geofencingRequest,
+                    geofencePendingIntent
+                ).apply {
+                    addOnSuccessListener {
+                        _viewModel.showSnackBar.value = "Geofence added"
+                        _viewModel.reminderGeofenceId.value =
+                            geofencingRequest.geofences.first().requestId
+                        _viewModel.validateAndSaveReminder()
+                    }
+                    addOnFailureListener { exception ->
+                        handleGeofenceClientException(exception)
+                    }
+                }
+            } else {
+                _viewModel.validateAndSaveReminder()
             }
         }
+    }
+
+    private fun handleGeofenceClientException(exception: java.lang.Exception) {
+        if (exception is ApiException) {
+            when (exception.statusCode) {
+                GEOFENCE_INSUFFICIENT_LOCATION_PERMISSION -> {
+                    if (exception is ResolvableApiException)
+                        try {
+                            val intentSenderRequest = IntentSenderRequest
+                                .Builder(exception.resolution.intentSender)
+                                .build()
+
+                            enableLocationRequestLauncher.launch(intentSenderRequest)
+
+                        } catch (sendEx: IntentSender.SendIntentException) {
+                            _viewModel.showErrorMessage.value =
+                                sendEx.localizedMessage
+                        }
+                }
+
+                GEOFENCE_NOT_AVAILABLE ->
+                    _viewModel.showErrorMessage.value =
+                        getString(R.string.geofence_not_available)
+
+                GEOFENCE_REQUEST_TOO_FREQUENT ->
+                    _viewModel.showErrorMessage.value =
+                        getString(R.string.geofence_request_too_frequent)
+
+                GEOFENCE_TOO_MANY_GEOFENCES ->
+                    _viewModel.showErrorMessage.value =
+                        getString(R.string.geofence_too_many_geofences)
+
+                GEOFENCE_TOO_MANY_PENDING_INTENTS ->
+                    _viewModel.showErrorMessage.value =
+                        getString(R.string.geofence_too_many_pending_intents)
+            }
+        } else
+            _viewModel.showErrorMessage.value =
+                getString(R.string.error_adding_geofence)
     }
 
     override fun onDestroy() {

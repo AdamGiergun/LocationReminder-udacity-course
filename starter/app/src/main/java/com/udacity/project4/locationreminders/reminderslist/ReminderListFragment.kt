@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.*
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationActivity
@@ -61,17 +60,16 @@ class ReminderListFragment : BaseFragment(), MenuProvider {
         //use the navigationCommand live data to navigate between the fragments
         _viewModel.navigationCommand.value =
             NavigationCommand.To(
-                ReminderListFragmentDirections.toSaveReminder()
+                ReminderListFragmentDirections.toEditReminder(null)
             )
     }
 
     private fun setupRecyclerView() {
         val adapter = RemindersListAdapter {
-            findNavController().navigate(
-                ReminderListFragmentDirections.actionReminderListFragmentToReminderDescriptionActivity(
-                    it
+            _viewModel.navigationCommand.value =
+                NavigationCommand.To(
+                    ReminderListFragmentDirections.toEditReminder(it)
                 )
-            )
         }
 
         binding.remindersRecyclerView.setup(adapter)
