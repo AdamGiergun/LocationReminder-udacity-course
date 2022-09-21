@@ -71,7 +71,7 @@ class ReminderListFragmentTest : KoinTest {
                 "test1",
                 0.0,
                 0.0,
-                true,
+                "test_id1",
                 "test1"
             ),
             ReminderDTO(
@@ -80,7 +80,7 @@ class ReminderListFragmentTest : KoinTest {
                 "test2",
                 180.0,
                 180.0,
-                false,
+                null,
                 "test2"
             )
         )
@@ -98,6 +98,8 @@ class ReminderListFragmentTest : KoinTest {
                         hasDescendant(withText("not in the list"))
                     )
                 )
+
+            close()
         }
     }
 
@@ -110,7 +112,7 @@ class ReminderListFragmentTest : KoinTest {
                 "test1",
                 0.0,
                 0.0,
-                true,
+                "test_id1",
                 "test1"
             ),
             ReminderDTO(
@@ -119,7 +121,7 @@ class ReminderListFragmentTest : KoinTest {
                 "test2",
                 180.0,
                 180.0,
-                false,
+                null,
                 "test2"
             )
         )
@@ -150,6 +152,8 @@ class ReminderListFragmentTest : KoinTest {
                     )
                 }
             }
+
+            close()
         }
     }
 
@@ -158,13 +162,16 @@ class ReminderListFragmentTest : KoinTest {
     fun emptyDataStore_errorSnackbarShown() = runTest(StandardTestDispatcher()) {
         // GIVEN empty datastore
         // WHEN fragment starts
-        launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
+        launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme).run {
 
-        // THAN snackbar is shown
-        val snackbar = KView {
-            withId(com.google.android.material.R.id.snackbar_text)
+            // THAN snackbar is shown
+            val snackbar = KView {
+                withId(com.google.android.material.R.id.snackbar_text)
+            }
+            snackbar.isDisplayed()
+
+            close()
         }
-        snackbar.isDisplayed()
     }
 
     // test the app navigation
@@ -183,7 +190,7 @@ class ReminderListFragmentTest : KoinTest {
             "test1",
             0.0,
             0.0,
-            true,
+            "test_id1",
             "test1"
         )
         reminder.run {
@@ -194,8 +201,7 @@ class ReminderListFragmentTest : KoinTest {
                     location,
                     latitude,
                     longitude,
-                    active,
-                    id
+                    geofenceId
                 )
             )
         }
@@ -213,24 +219,26 @@ class ReminderListFragmentTest : KoinTest {
 
             // THEN - Verify that we navigate to the SaveReminderFragment
             Mockito.verify(navController).navigate(
-                ReminderListFragmentDirections.toSaveReminder()
+                ReminderListFragmentDirections.toEditReminder(null)
             )
+
+            close()
         }
     }
 
     @Test
     fun clickListItem_toNavigate() = runTest(StandardTestDispatcher()) {
-        val title = "title2"
-        val reminder = ReminderDataItem(
-            title,
+        val newTitle = "title2"
+        val reminderData = ReminderDataItem(
+            newTitle,
             "test2",
             "test2",
             0.0,
             0.0,
-            true,
-            "test2"
+            "test_id2",
+            null
         )
-        reminder.run {
+        reminderData.run {
             fakeDataSource.saveReminder(
                 ReminderDTO(
                     title,
@@ -238,10 +246,25 @@ class ReminderListFragmentTest : KoinTest {
                     location,
                     latitude,
                     longitude,
-                    active,
-                    id
+                    geofenceId
                 )
             )
+        }
+
+        val newReminder = fakeDataSource.getReminder(reminderData.geofenceId ?: "").let { result ->
+            if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<ReminderDTO>) {
+                reminderData.run {
+                    ReminderDataItem(
+                        title,
+                        description,
+                        location,
+                        latitude,
+                        longitude,
+                        geofenceId,
+                        result.data.id
+                    )
+                }
+            } else null
         }
 
         // GIVEN: List of items on the reminders screen
@@ -253,13 +276,15 @@ class ReminderListFragmentTest : KoinTest {
             }
 
             // WHEN: click on the list item
-            onView(withText(title)).perform(click())
+            onView(withText(newTitle)).perform(click())
 
             // THEN - Verify that we navigate to the ReminderDescriptionActivity
             Mockito.verify(navController).navigate(
                 ReminderListFragmentDirections
-                    .actionReminderListFragmentToReminderDescriptionActivity(reminder)
+                    .toEditReminder(newReminder)
             )
+
+            close()
         }
     }
 }

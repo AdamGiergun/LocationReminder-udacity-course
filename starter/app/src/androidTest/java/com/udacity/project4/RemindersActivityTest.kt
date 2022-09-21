@@ -19,7 +19,7 @@ import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
-import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.locationreminders.savereminder.EditReminderViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -68,7 +68,7 @@ class RemindersActivityTest :
                 )
             }
             single {
-                SaveReminderViewModel(
+                EditReminderViewModel(
                     appContext,
                     get() as ReminderDataSource
                 )
@@ -78,7 +78,7 @@ class RemindersActivityTest :
         }
         //declare a new koin module
         startKoin {
-            modules(listOf(myModule))
+            modules(myModule)
         }
         //Get our real repository
         repository = get()
@@ -114,7 +114,7 @@ class RemindersActivityTest :
             "location1",
             0.0,
             1.0,
-            true,
+            "test_id1",
             "test1"
         )
         reminder.run {
@@ -125,8 +125,8 @@ class RemindersActivityTest :
                     location,
                     latitude,
                     longitude,
-                    active,
-                    id
+                    geofenceId,
+                    id ?: ""
                 )
             )
         }
@@ -137,7 +137,7 @@ class RemindersActivityTest :
                 .check(ViewAssertions.matches(withText("title1")))
             onView(withId(R.id.reminder_description))
                 .check(ViewAssertions.matches(withText("description1")))
-            onView(withId(R.id.reminder_location))
+            onView(withId(R.id.selected_location))
                 .check(ViewAssertions.matches(withText("location1")))
 
             close()
@@ -154,7 +154,7 @@ class RemindersActivityTest :
                 .perform(replaceText("TITLE2"))
             onView(withId(R.id.reminder_description))
                 .perform(replaceText("DESCRIPTION2"))
-            onView(withId(R.id.selectLocation)).perform(click())
+            onView(withId(R.id.select_location)).perform(click())
             onView(withId(R.id.map)).perform(longClick())
             onView(withText("OK")).perform(click())
 
