@@ -1,12 +1,14 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
 import android.content.IntentSender
 import android.content.res.Resources
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -32,7 +34,7 @@ import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
-import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.locationreminders.savereminder.EditReminderViewModel
 import com.udacity.project4.utils.*
 import org.koin.android.ext.android.inject
 
@@ -41,7 +43,7 @@ private const val TAG = "LocationReminder"
 class SelectLocationFragment : BaseFragment() {
 
     //Use Koin to get the view model of the SaveReminder
-    override val _viewModel: SaveReminderViewModel by inject()
+    override val _viewModel: EditReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
     private var googleMap: GoogleMap? = null
 
@@ -58,9 +60,8 @@ class SelectLocationFragment : BaseFragment() {
         if (granted)
             _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
         else {
-
             val permission =
-                if (Manifest.permission.ACCESS_BACKGROUND_LOCATION in permissions)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && Manifest.permission.ACCESS_BACKGROUND_LOCATION in permissions)
                     Manifest.permission.ACCESS_BACKGROUND_LOCATION
                 else
                     Manifest.permission.ACCESS_FINE_LOCATION
@@ -95,13 +96,14 @@ class SelectLocationFragment : BaseFragment() {
         _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
     }
 
+    @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentSelectLocationBinding.inflate(inflater)
 
         binding.viewModel = _viewModel
-        binding.lifecycleOwner = this
+        binding.lifecycleOwner = viewLifecycleOwner
 
         setDisplayHomeAsUpEnabled(true)
 
@@ -130,8 +132,6 @@ class SelectLocationFragment : BaseFragment() {
                 else -> false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
-        _viewModel.isLocationSelected.value = false
 
         _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
 
@@ -194,11 +194,13 @@ class SelectLocationFragment : BaseFragment() {
                 }
 
                 LocationState.BACKGROUND_LOCATION_NOT_PERMITTED -> {
-                    permissionsRequest.launch(
-                        arrayOf(
-                            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        permissionsRequest.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                            )
                         )
-                    )
+                    }
                 }
 
                 LocationState.ENABLED -> {
@@ -274,17 +276,6 @@ class SelectLocationFragment : BaseFragment() {
 
         _viewModel.showSnackBarInt.value = R.string.info_about_selecting_location
 
-        _viewModel.isLocationSelected.observe(viewLifecycleOwner) { isLocationSelected ->
-            if (isLocationSelected) {
-                onLocationSelected()
-            } else {
-                _viewModel.selectedPOI.value = null
-                _viewModel.latitude.value = null
-                _viewModel.longitude.value = null
-                _viewModel.reminderSelectedLocationStr.value = null
-            }
-        }
-
         return binding.root
     }
 
@@ -305,12 +296,8 @@ class SelectLocationFragment : BaseFragment() {
         }
     }
 
-    private fun onLocationSelected() {
-        _viewModel.navigationCommand.value = NavigationCommand.Back
-    }
-
     internal class SaveLocationDialog(
-        private val viewModel: SaveReminderViewModel,
+        private val viewModel: EditReminderViewModel,
         private val selectedPOI: PointOfInterest? = null,
         private val latLng: LatLng? = null,
         private val marker: Marker? = null
@@ -327,21 +314,20 @@ class SelectLocationFragment : BaseFragment() {
                     setPositiveButton(android.R.string.ok) { _, _ ->
                         if (selectedPOI == null) {
                             latLng?.let {
-                                viewModel.latitude.value = latLng.latitude
-                                viewModel.longitude.value = latLng.longitude
-                                viewModel.isLocationSelected.value = true
-                                viewModel.reminderSelectedLocationStr.value = getString(R.string.undisclosed_location)
+                                viewModel.reminderLatitude.value = latLng.latitude
+                                viewModel.reminderLongitude.value = latLng.longitude
+                                viewModel.reminderSelectedLocationStr.value =
+                                    getString(R.string.undisclosed_location)
                             }
                         } else {
                             viewModel.selectedPOI.value = selectedPOI
-                            viewModel.latitude.value = selectedPOI.latLng.latitude
-                            viewModel.longitude.value = selectedPOI.latLng.longitude
+                            viewModel.reminderLatitude.value = selectedPOI.latLng.latitude
+                            viewModel.reminderLongitude.value = selectedPOI.latLng.longitude
                             viewModel.reminderSelectedLocationStr.value = selectedPOI.name
-                            viewModel.isLocationSelected.value = true
                         }
+                        viewModel.navigationCommand.value = NavigationCommand.Back
                     }
                     setNegativeButton(android.R.string.cancel) { _, _ ->
-                        viewModel.isLocationSelected.value = false
                         marker?.remove()
                     }
                     create()

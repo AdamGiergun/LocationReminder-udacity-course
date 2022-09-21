@@ -25,14 +25,14 @@ import org.koin.test.inject
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
-class SaveReminderViewModelTest : KoinTest {
+class EditReminderViewModelTest : KoinTest {
     //TODO: provide testing to the SaveReminderView and its live data objects
 
-    private val saveReminderViewModel: SaveReminderViewModel by inject()
+    private val editReminderViewModel: EditReminderViewModel by inject()
 
     private val viewModelModule = module {
         single {
-            SaveReminderViewModel(
+            EditReminderViewModel(
                 get(),
                 get() as ReminderDataSource
             )
@@ -57,37 +57,39 @@ class SaveReminderViewModelTest : KoinTest {
 
     @Test
     fun `no title snackbar`() = runTest {
-        saveReminderViewModel.validateAndSaveReminder()
+        editReminderViewModel.validateAndSaveReminder()
 
-        val showSnackBarInt = saveReminderViewModel.showSnackBarInt.getOrAwaitValue()
+        val showSnackBarInt = editReminderViewModel.showSnackBarInt.getOrAwaitValue()
         assertThat(showSnackBarInt).isEqualTo(R.string.err_enter_title)
     }
 
     @Test
     fun `no location snackbar`() = runTest {
-        saveReminderViewModel.reminderTitle.postValue("fake title")
-        saveReminderViewModel.validateAndSaveReminder()
+        editReminderViewModel.reminderTitle.postValue("fake title")
+        editReminderViewModel.validateAndSaveReminder()
 
-        val showSnackBarInt = saveReminderViewModel.showSnackBarInt.getOrAwaitValue()
+        val showSnackBarInt = editReminderViewModel.showSnackBarInt.getOrAwaitValue()
         assertThat(showSnackBarInt).isEqualTo(R.string.err_select_location)
     }
 
     @Test
     fun `reminder saved`() = runTest {
-        saveReminderViewModel.reminderTitle.postValue("fake title")
-        saveReminderViewModel.reminderSelectedLocationStr.postValue("fake location")
-        saveReminderViewModel.latitude.postValue(0.0)
-        saveReminderViewModel.longitude.postValue(0.0)
-        saveReminderViewModel.validateAndSaveReminder()
+        editReminderViewModel.apply {
+            reminderTitle.postValue("fake title")
+            reminderSelectedLocationStr.postValue("fake location")
+            reminderLatitude.postValue(0.0)
+            reminderLongitude.postValue(0.0)
+            validateAndSaveReminder()
+        }
 
-        val showLoading = saveReminderViewModel.showLoading.getOrAwaitValue()
+        val showLoading = editReminderViewModel.showLoading.getOrAwaitValue()
         assertThat(showLoading).isFalse()
 
         val appContext = getApplicationContext<MyApp>().applicationContext
-        val showToast = saveReminderViewModel.showToast.getOrAwaitValue()
+        val showToast = editReminderViewModel.showToast.getOrAwaitValue()
         assertThat(showToast).isEqualTo(appContext.getString(R.string.reminder_saved))
 
-        val navigationCommand = saveReminderViewModel.navigationCommand.getOrAwaitValue()
+        val navigationCommand = editReminderViewModel.navigationCommand.getOrAwaitValue()
         assertThat(navigationCommand).isEqualTo(NavigationCommand.Back)
     }
 }

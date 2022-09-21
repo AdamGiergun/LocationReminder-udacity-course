@@ -9,23 +9,45 @@ import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
-import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.LocationState
+import com.udacity.project4.utils.toDTO
 import kotlinx.coroutines.launch
 
-class SaveReminderViewModel(val app: Application, private val dataSource: ReminderDataSource) :
+class EditReminderViewModel(val app: Application, private val dataSource: ReminderDataSource) :
     BaseViewModel(app) {
+    private var isReminderInitialized = false
     val reminderTitle = MutableLiveData<String?>()
     val reminderDescription = MutableLiveData<String?>()
     val reminderSelectedLocationStr = MutableLiveData<String?>()
     val selectedPOI = MutableLiveData<PointOfInterest?>()
-    val latitude = MutableLiveData<Double?>()
-    val longitude = MutableLiveData<Double?>()
-    val isActive = MutableLiveData(false)
-    val id = MutableLiveData<String?>()
+    val reminderLatitude = MutableLiveData<Double?>()
+    val reminderLongitude = MutableLiveData<Double?>()
+    val reminderGeofenceId = MutableLiveData<String?>()
+    var reminderId: String? = null
 
-    val isLocationSelected = MutableLiveData(false)
+    private var initialReminderLatitude: Double? = null
+    private var initialReminderLongitude: Double? = null
+
+    fun setReminder(reminderDataItem: ReminderDataItem) {
+        if (!isReminderInitialized)
+            reminderDataItem.run {
+                reminderTitle.postValue(title)
+                reminderDescription.postValue(description)
+                reminderSelectedLocationStr.postValue(location)
+                reminderLatitude.postValue(latitude)
+                reminderLongitude.postValue(longitude)
+                reminderGeofenceId.postValue(geofenceId)
+                initialReminderLatitude = latitude
+                initialReminderLongitude = longitude
+                isReminderInitialized = true
+                reminderId = id
+            }
+    }
+
+    val isLocationChanged
+        get() = !(reminderLatitude.value == initialReminderLatitude &&
+                reminderLongitude.value == initialReminderLongitude)
 
     private val _locationState = MutableLiveData(LocationState.CHECK_SETTINGS)
     val locationState: LiveData<LocationState>
@@ -43,10 +65,12 @@ class SaveReminderViewModel(val app: Application, private val dataSource: Remind
         reminderDescription.value = null
         reminderSelectedLocationStr.value = null
         selectedPOI.value = null
-        latitude.value = null
-        longitude.value = null
-        isActive.value = false
-        id.value = null
+        reminderLatitude.value = null
+        reminderLongitude.value = null
+        reminderGeofenceId.value = null
+        initialReminderLatitude = null
+        initialReminderLongitude = null
+        isReminderInitialized = false
     }
 
     /**
@@ -57,10 +81,10 @@ class SaveReminderViewModel(val app: Application, private val dataSource: Remind
             reminderTitle.value,
             reminderDescription.value,
             reminderSelectedLocationStr.value,
-            latitude.value,
-            longitude.value,
-            isActive.value ?: false,
-            id.value ?: "unknown"
+            reminderLatitude.value,
+            reminderLongitude.value,
+            reminderGeofenceId.value,
+            reminderId
         )
 
         if (validateEnteredData(reminderData)) {
@@ -74,17 +98,11 @@ class SaveReminderViewModel(val app: Application, private val dataSource: Remind
     private fun saveReminder(reminderData: ReminderDataItem) {
         showLoading.value = true
         viewModelScope.launch {
-            dataSource.saveReminder(
-                ReminderDTO(
-                    reminderData.title,
-                    reminderData.description,
-                    reminderData.location,
-                    reminderData.latitude,
-                    reminderData.longitude,
-                    reminderData.active,
-                    reminderData.id
-                )
-            )
+            if (reminderData.id == null) {
+                dataSource.saveReminder(reminderData.toDTO())
+            } else {
+                dataSource.updateReminder(reminderData.toDTO())
+            }
             showLoading.value = false
             showToast.value = app.getString(R.string.reminder_saved)
             navigationCommand.value = NavigationCommand.Back

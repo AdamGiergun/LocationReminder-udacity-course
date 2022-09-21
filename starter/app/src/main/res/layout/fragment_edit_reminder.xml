@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel" />
+            type="com.udacity.project4.locationreminders.savereminder.EditReminderViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -42,7 +42,7 @@
             android:inputType="text" />
 
         <TextView
-            android:id="@+id/selectLocation"
+            android:id="@+id/select_location"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackground"
@@ -57,16 +57,16 @@
             app:drawableLeftCompat="@drawable/ic_location" />
 
         <TextView
-            android:id="@+id/selectedLocation"
+            android:id="@+id/selected_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/margin_normal"
             android:layout_marginRight="@dimen/margin_normal"
             android:text="@{viewModel.reminderSelectedLocationStr}"
             android:textColor="@color/black"
-            app:layout_constraintBottom_toBottomOf="@id/selectLocation"
+            app:layout_constraintBottom_toBottomOf="@id/select_location"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/selectLocation"
+            app:layout_constraintTop_toTopOf="@id/select_location"
             tools:text="Location" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
