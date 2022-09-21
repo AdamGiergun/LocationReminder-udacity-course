@@ -17,7 +17,7 @@ import com.udacity.project4.utils.sendNotification
 import org.koin.java.KoinJavaComponent.inject
 
 private const val TAG = "GeofenceTransitionsWrkr"
-const val REQUEST_ID = "requestId"
+const val GEOFENCE_ID = "requestId"
 private const val UNIQUE_WORK_NAME = "InactivateReminderWorker"
 
 class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParameters) :
@@ -41,7 +41,7 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
                     if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
                         geofencingEvent.triggeringGeofences?.let {
                             val data =
-                                Data.Builder().putString(REQUEST_ID, it.first().requestId).build()
+                                Data.Builder().putString(GEOFENCE_ID, it.first().requestId).build()
                             return OneTimeWorkRequestBuilder<GeofenceTransitionsWorker>().run {
                                 setInputData(data)
                                 setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -64,7 +64,7 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
     }
 
     override suspend fun doWork(): Result {
-        inputData.getString(REQUEST_ID)?.let { requestId ->
+        inputData.getString(GEOFENCE_ID)?.let { requestId ->
             val geofencingClient = getGeofencingClient(applicationContext)
             geofencingClient.removeGeofences(listOf(requestId))
                 .addOnSuccessListener {
@@ -101,7 +101,7 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
                     reminderDTO.location,
                     reminderDTO.latitude,
                     reminderDTO.longitude,
-                    reminderDTO.isActive,
+                    reminderDTO.geofenceId,
                     reminderDTO.id
                 )
             )

@@ -49,12 +49,12 @@ object BindingAdapters {
 
     @BindingAdapter("android:titleColor")
     @JvmStatic
-    fun TextView.setTitleColor(active: Boolean) {
+    fun TextView.setTitleColor(geofenceId: String?) {
         setTextColor(
-            if (active)
-                ContextCompat.getColor(context, android.R.color.black)
-            else
+            if (geofenceId == null)
                 ContextCompat.getColor(context, android.R.color.darker_gray)
+            else
+                ContextCompat.getColor(context, android.R.color.black)
         )
     }
 }

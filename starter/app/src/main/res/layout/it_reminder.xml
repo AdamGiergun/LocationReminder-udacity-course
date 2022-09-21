@@ -30,7 +30,7 @@
                 android:layout_marginLeft="@dimen/padding_small"
                 android:text="@{item.title}"
                 android:textSize="@dimen/text_size_normal"
-                android:titleColor="@{item.active}"
+                android:titleColor="@{item.geofenceId}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Title" />

@@ -14,7 +14,7 @@ class InactivateReminderWorker(context: Context, workerParameters: WorkerParamet
     companion object {
         fun buildWorkRequest(requestId: String): OneTimeWorkRequest {
             val data =
-                Data.Builder().putString(REQUEST_ID, requestId).build()
+                Data.Builder().putString(GEOFENCE_ID, requestId).build()
             return OneTimeWorkRequestBuilder<InactivateReminderWorker>().run {
                 setInputData(data)
                 setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -24,11 +24,11 @@ class InactivateReminderWorker(context: Context, workerParameters: WorkerParamet
     }
 
     override suspend fun doWork(): Result {
-        inputData.getString(REQUEST_ID)?.let { requestId ->
+        inputData.getString(GEOFENCE_ID)?.let { geofenceId ->
             val remindersLocalRepository: ReminderDataSource by inject(
                 ReminderDataSource::class.java
             )
-            remindersLocalRepository.setReminderState(requestId, false)
+            remindersLocalRepository.resetGeofenceId(geofenceId)
             Log.d(TAG, "Reminder set inactive")
         }
         return Result.success()
