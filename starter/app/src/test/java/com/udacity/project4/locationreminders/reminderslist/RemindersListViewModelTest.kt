@@ -62,7 +62,7 @@ class RemindersListViewModelTest : KoinTest {
                 "test1",
                 0.0,
                 0.0,
-                true,
+                "test_id",
                 "test1"
             ),
             ReminderDTO(
@@ -71,7 +71,7 @@ class RemindersListViewModelTest : KoinTest {
                 "test2",
                 180.0,
                 180.0,
-                false,
+                null,
                 "test2"
             )
         ).forEach {
