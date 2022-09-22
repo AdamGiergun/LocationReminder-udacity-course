@@ -6,6 +6,7 @@ import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.PerformException
 import androidx.test.espresso.action.ViewActions.click
@@ -21,45 +22,48 @@ import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.koin.core.context.loadKoinModules
-import org.koin.core.context.unloadKoinModules
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import org.koin.test.KoinTest
+import org.koin.test.AutoCloseKoinTest
 import org.koin.test.inject
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
-
 
 @RunWith(AndroidJUnit4::class)
 @ExperimentalCoroutinesApi
 //UI Testing
 @MediumTest
-class ReminderListFragmentTest : KoinTest {
+class ReminderListFragmentTest : AutoCloseKoinTest() {
 
     private val fakeDataSource: ReminderDataSource by inject()
-
-    private val viewModelModule = module {
-        single<ReminderDataSource> { FakeDataSource() }
-    }
 
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
     @Before
     fun setUp() {
-        loadKoinModules(viewModelModule)
-    }
+        stopKoin()
 
-    @After
-    fun tearDown() {
-        unloadKoinModules(viewModelModule)
-    }
+        val viewModelModule = module {
+            viewModel {
+                RemindersListViewModel(
+                    ApplicationProvider.getApplicationContext(),
+                    get() as ReminderDataSource
+                )
+            }
+            single<ReminderDataSource> { FakeDataSource() }
+        }
 
+        startKoin {
+            modules(viewModelModule)
+        }
+    }
 
     // test the displayed data on the UI.
     @Test(expected = PerformException::class)
