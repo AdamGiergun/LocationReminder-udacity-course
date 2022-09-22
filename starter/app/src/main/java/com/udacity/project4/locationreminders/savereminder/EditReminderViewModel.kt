@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 
 class EditReminderViewModel(val app: Application, private val dataSource: ReminderDataSource) :
     BaseViewModel(app) {
-    private var isReminderInitialized = false
     val reminderTitle = MutableLiveData<String?>()
     val reminderDescription = MutableLiveData<String?>()
     val reminderSelectedLocationStr = MutableLiveData<String?>()
@@ -24,30 +23,42 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     val reminderLatitude = MutableLiveData<Double?>()
     val reminderLongitude = MutableLiveData<Double?>()
     val reminderGeofenceId = MutableLiveData<String?>()
-    var reminderId: String? = null
+    private var reminderId: String? = null
+
+    private val reminderDataItem
+        get() = ReminderDataItem(
+            reminderTitle.value,
+            reminderDescription.value,
+            reminderSelectedLocationStr.value,
+            reminderLatitude.value,
+            reminderLongitude.value,
+            reminderGeofenceId.value,
+            reminderId
+        )
 
     private var initialReminderLatitude: Double? = null
     private var initialReminderLongitude: Double? = null
+    val isLocationChanged
+        get() = !(reminderLatitude.value == initialReminderLatitude &&
+                reminderLongitude.value == initialReminderLongitude)
 
-    fun setReminder(reminderDataItem: ReminderDataItem) {
+    private var isReminderInitialized = false
+
+    fun setReminderIfNotInitialized(reminderDataItem: ReminderDataItem) {
         if (!isReminderInitialized)
             reminderDataItem.run {
-                reminderTitle.postValue(title)
-                reminderDescription.postValue(description)
-                reminderSelectedLocationStr.postValue(location)
-                reminderLatitude.postValue(latitude)
-                reminderLongitude.postValue(longitude)
-                reminderGeofenceId.postValue(geofenceId)
+                reminderTitle.value = title
+                reminderDescription.value = description
+                reminderSelectedLocationStr.value = location
+                reminderLatitude.value = latitude
+                reminderLongitude.value = longitude
+                reminderGeofenceId.value = geofenceId
                 initialReminderLatitude = latitude
                 initialReminderLongitude = longitude
                 isReminderInitialized = true
                 reminderId = id
             }
     }
-
-    val isLocationChanged
-        get() = !(reminderLatitude.value == initialReminderLatitude &&
-                reminderLongitude.value == initialReminderLongitude)
 
     private val _locationState = MutableLiveData(LocationState.CHECK_SETTINGS)
     val locationState: LiveData<LocationState>
@@ -68,6 +79,7 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
         reminderLatitude.value = null
         reminderLongitude.value = null
         reminderGeofenceId.value = null
+        reminderId = null
         initialReminderLatitude = null
         initialReminderLongitude = null
         isReminderInitialized = false
@@ -77,31 +89,21 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
      * Validate the entered data then saves the reminder data to the DataSource
      */
     fun validateAndSaveReminder() {
-        val reminderData = ReminderDataItem(
-            reminderTitle.value,
-            reminderDescription.value,
-            reminderSelectedLocationStr.value,
-            reminderLatitude.value,
-            reminderLongitude.value,
-            reminderGeofenceId.value,
-            reminderId
-        )
-
-        if (validateEnteredData(reminderData)) {
-            saveReminder(reminderData)
+        if (validateEnteredData()) {
+            saveOrUpdateReminder()
         }
     }
 
     /**
      * Save the reminder to the data source
      */
-    private fun saveReminder(reminderData: ReminderDataItem) {
+    private fun saveOrUpdateReminder() {
         showLoading.value = true
         viewModelScope.launch {
-            if (reminderData.id == null) {
-                dataSource.saveReminder(reminderData.toDTO())
+            if (reminderId == null) {
+                dataSource.saveReminder(reminderDataItem.toDTO())
             } else {
-                dataSource.updateReminder(reminderData.toDTO())
+                dataSource.updateReminder(reminderDataItem.toDTO())
             }
             showLoading.value = false
             showToast.value = app.getString(R.string.reminder_saved)
@@ -112,15 +114,15 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     /**
      * Validate the entered data and show error to the user if there's any invalid data
      */
-    fun validateEnteredData(reminderData: ReminderDataItem): Boolean {
-        if (reminderData.title.isNullOrEmpty()) {
+    fun validateEnteredData(): Boolean {
+        if (reminderTitle.value.isNullOrEmpty()) {
             showSnackBarInt.value = R.string.err_enter_title
             return false
         }
 
-        if (reminderData.location.isNullOrEmpty()
-            || reminderData.latitude == null
-            || reminderData.longitude == null
+        if (reminderSelectedLocationStr.value.isNullOrEmpty()
+            || reminderLatitude.value == null
+            || reminderLongitude.value == null
         ) {
             showSnackBarInt.value = R.string.err_select_location
             return false

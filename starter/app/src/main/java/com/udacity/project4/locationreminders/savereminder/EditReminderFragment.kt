@@ -22,7 +22,6 @@ import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentEditReminderBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
-import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.ACTION_GEOFENCE_EVENT
 import com.udacity.project4.utils.getGeofencingClient
 import com.udacity.project4.utils.getGeofencingRequest
@@ -65,7 +64,7 @@ class EditReminderFragment : BaseFragment() {
         binding = FragmentEditReminderBinding.inflate(inflater)
         val args: EditReminderFragmentArgs by navArgs()
         args.reminder?.let {
-            _viewModel.setReminder(it)
+            _viewModel.setReminderIfNotInitialized(it)
         }
 
         setDisplayHomeAsUpEnabled(true)
@@ -93,17 +92,7 @@ class EditReminderFragment : BaseFragment() {
 
     @SuppressLint("MissingPermission")
     private fun saveReminder() {
-        val reminderData = ReminderDataItem(
-            _viewModel.reminderTitle.value,
-            _viewModel.reminderDescription.value,
-            _viewModel.reminderSelectedLocationStr.value,
-            _viewModel.reminderLatitude.value,
-            _viewModel.reminderLongitude.value,
-            _viewModel.reminderGeofenceId.value,
-            _viewModel.reminderId
-        )
-
-        if (_viewModel.validateEnteredData(reminderData)) {
+        if (_viewModel.validateEnteredData()) {
             if (_viewModel.isLocationChanged) {
                 _viewModel.reminderGeofenceId.value?.let { requestId ->
                     val logTag = this::class.java.name
@@ -121,8 +110,9 @@ class EditReminderFragment : BaseFragment() {
 
             if (_viewModel.reminderGeofenceId.value == null) {
                 val geofencingRequest = getGeofencingRequest(
-                    reminderData.latitude!!,
-                    reminderData.longitude!!
+                    // already checked by _viewModel.validateEnteredData())
+                    _viewModel.reminderLatitude.value!!,
+                    _viewModel.reminderLongitude.value!!
                 )
                 geofencingClient.addGeofences(
                     geofencingRequest,
