@@ -42,7 +42,6 @@ class RemindersActivityTest :
     AutoCloseKoinTest() {// Extended Koin Test - embed autoclose @after method to close Koin after every test
 
     private lateinit var repository: ReminderDataSource
-    private lateinit var appContext: Application
 //    private val dataBindingIdlingResource = DataBindingIdlingResource()
 
     @get:Rule
@@ -59,7 +58,9 @@ class RemindersActivityTest :
     @Before
     fun init() {
         stopKoin()//stop the original app koin
-        appContext = getApplicationContext()
+
+        val appContext: Application = getApplicationContext()
+
         val myModule = module {
             viewModel {
                 RemindersListViewModel(
