@@ -24,7 +24,7 @@ class FakeDataSource : ReminderDataSource {
         TODO("return the reminder with the id")
     }
 
-    override suspend fun resetGeofenceId(geofenceId: String) {
+    override suspend fun removeGeofenceId(geofenceId: String) {
         TODO("Not yet implemented")
     }
 

@@ -108,7 +108,7 @@ class RemindersLocalRepositoryTest {
 
         // WHEN - The reminder is deactivated
         reminder.geofenceId?.let {
-            repository.resetGeofenceId(it)
+            repository.removeGeofenceId(it)
         }
 
         // THEN - The loaded data contains the expected values

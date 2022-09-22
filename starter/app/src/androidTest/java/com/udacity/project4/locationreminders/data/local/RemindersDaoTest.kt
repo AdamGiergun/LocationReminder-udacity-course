@@ -103,7 +103,7 @@ class RemindersDaoTest {
 
         // WHEN - The reminder is deactivated
         reminder.geofenceId?.let {
-            database.reminderDao().resetGeofenceId(it)
+            database.reminderDao().removeGeofenceId(it)
         }
 
         // THEN - The loaded data contains the expected values

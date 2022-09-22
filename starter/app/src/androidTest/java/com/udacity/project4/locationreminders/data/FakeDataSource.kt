@@ -31,7 +31,7 @@ class FakeDataSource : ReminderDataSource {
         }
     }
 
-    override suspend fun resetGeofenceId(geofenceId: String) {
+    override suspend fun removeGeofenceId(geofenceId: String) {
         TODO("Not yet implemented")
     }
 

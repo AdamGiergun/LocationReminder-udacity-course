@@ -12,8 +12,6 @@ import androidx.work.WorkManager
  *
  * Or users can add the reminders and then close the app, So our app has to run in the background
  * and handle the geofencing in the background.
- * To do that you can use https://developer.android.com/reference/android/support/v4/app/JobIntentService to do that.
- *
  */
 
 private const val UNIQUE_WORK_NAME = "GeofenceTransitionsWorker"

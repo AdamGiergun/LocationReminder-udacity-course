@@ -42,12 +42,27 @@ interface RemindersDao {
     @Query("DELETE FROM reminders")
     fun deleteAllReminders()
 
+    /**
+     * Delete a reminder from the database.
+     *
+     * @param reminder the reminder to be deleted.
+     */
     @Delete
     fun deleteReminder(reminder: ReminderDTO)
 
+    /**
+     * Remove geofenceId from db.
+     *
+     * @param geofenceId of the reminder to be removed.
+     */
     @Query("UPDATE reminders SET geofence_id=null WHERE geofence_id=:geofenceId")
-    fun resetGeofenceId(geofenceId: String)
+    fun removeGeofenceId(geofenceId: String)
 
+    /**
+     * Update a reminder in the database.
+     *
+     * @param reminder the reminder to be updated.
+     */
     @Update
     fun updateReminder(reminder: ReminderDTO)
 }

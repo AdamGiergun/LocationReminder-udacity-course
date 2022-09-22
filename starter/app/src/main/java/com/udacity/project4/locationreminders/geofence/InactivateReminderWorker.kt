@@ -28,7 +28,7 @@ class InactivateReminderWorker(context: Context, workerParameters: WorkerParamet
             val remindersLocalRepository: ReminderDataSource by inject(
                 ReminderDataSource::class.java
             )
-            remindersLocalRepository.resetGeofenceId(geofenceId)
+            remindersLocalRepository.removeGeofenceId(geofenceId)
             Log.d(TAG, "Reminder set inactive")
         }
         return Result.success()

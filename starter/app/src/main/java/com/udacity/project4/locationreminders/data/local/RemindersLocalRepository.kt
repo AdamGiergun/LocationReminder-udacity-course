@@ -61,12 +61,16 @@ class RemindersLocalRepository(
      * Reset reminder's geofenceId
      * @param geofenceId to be reset
      */
-    override suspend fun resetGeofenceId(geofenceId: String) {
+    override suspend fun removeGeofenceId(geofenceId: String) {
         withContext(ioDispatcher) {
-            remindersDao.resetGeofenceId(geofenceId)
+            remindersDao.removeGeofenceId(geofenceId)
         }
     }
 
+    /**
+     * Update reminder
+     * @param reminder to be updated
+     */
     override suspend fun updateReminder(reminder: ReminderDTO) {
         withContext(ioDispatcher) {
             remindersDao.updateReminder(reminder)
@@ -74,7 +78,8 @@ class RemindersLocalRepository(
     }
 
     /**
-     * Deletes all the reminders in the db
+     * Deletes a reminder from the db
+     * @param reminder to be deleted
      */
     override suspend fun deleteReminder(reminder: ReminderDTO) {
         withContext(ioDispatcher) {
