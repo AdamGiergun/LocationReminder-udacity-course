@@ -19,6 +19,7 @@ import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.utils.toDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -197,18 +198,7 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
             "test_id1",
             "test1"
         )
-        reminder.run {
-            fakeDataSource.saveReminder(
-                ReminderDTO(
-                    title,
-                    description,
-                    location,
-                    latitude,
-                    longitude,
-                    geofenceId
-                )
-            )
-        }
+        fakeDataSource.saveReminder(reminder.toDTO())
 
         // GIVEN: List of items on the reminders screen
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme).run {
@@ -233,7 +223,7 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
     @Test
     fun clickListItem_toNavigate() = runTest(StandardTestDispatcher()) {
         val newTitle = "title2"
-        val reminderData = ReminderDataItem(
+        val reminder = ReminderDataItem(
             newTitle,
             "test2",
             "test2",
@@ -241,34 +231,23 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
             0.0,
             "test_id2",
             null
-        )
-        reminderData.run {
-            fakeDataSource.saveReminder(
-                ReminderDTO(
-                    title,
-                    description,
-                    location,
-                    latitude,
-                    longitude,
-                    geofenceId
-                )
-            )
-        }
-
-        val newReminder = fakeDataSource.getReminder(reminderData.geofenceId ?: "").let { result ->
-            if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<ReminderDTO>) {
-                reminderData.run {
-                    ReminderDataItem(
-                        title,
-                        description,
-                        location,
-                        latitude,
-                        longitude,
-                        geofenceId,
-                        result.data.id
-                    )
-                }
-            } else null
+        ).let { sourceData ->
+            fakeDataSource.saveReminder(sourceData.toDTO())
+            fakeDataSource.getReminder(sourceData.geofenceId ?: "").let { result ->
+                if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<ReminderDTO>) {
+                    sourceData.run {
+                        ReminderDataItem(
+                            title,
+                            description,
+                            location,
+                            latitude,
+                            longitude,
+                            geofenceId,
+                            result.data.id
+                        )
+                    }
+                } else null
+            }
         }
 
         // GIVEN: List of items on the reminders screen
@@ -285,7 +264,7 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
             // THEN - Verify that we navigate to the ReminderDescriptionActivity
             Mockito.verify(navController).navigate(
                 ReminderListFragmentDirections
-                    .toEditReminder(newReminder)
+                    .toEditReminder(reminder)
             )
 
             close()

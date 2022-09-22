@@ -6,8 +6,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.google.common.truth.Truth.assertThat
-import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.utils.toDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -51,17 +51,7 @@ class RemindersDaoTest {
             "test_id1"
 
         )
-        database.reminderDao().saveReminder(
-            ReminderDTO(
-                reminder.title,
-                reminder.description,
-                reminder.location,
-                reminder.latitude,
-                reminder.longitude,
-                reminder.geofenceId,
-                reminder.id ?: ""
-            )
-        )
+        database.reminderDao().saveReminder(reminder.toDTO())
 
         // WHEN - Get the reminder by id from the database
         val loaded = database.reminderDao().getReminderById("test_id1")
@@ -89,17 +79,7 @@ class RemindersDaoTest {
             "test_geofence_id1",
             "test_id1"
         )
-        database.reminderDao().saveReminder(
-            ReminderDTO(
-                reminder.title,
-                reminder.description,
-                reminder.location,
-                reminder.latitude,
-                reminder.longitude,
-                reminder.geofenceId,
-                reminder.id ?: ""
-            )
-        )
+        database.reminderDao().saveReminder(reminder.toDTO())
 
         // WHEN - The reminder is deactivated
         reminder.geofenceId?.let {
@@ -152,17 +132,7 @@ class RemindersDaoTest {
         )
 
         reminders.forEach { reminder ->
-            database.reminderDao().saveReminder(
-                ReminderDTO(
-                    reminder.title,
-                    reminder.description,
-                    reminder.location,
-                    reminder.latitude,
-                    reminder.longitude,
-                    reminder.geofenceId,
-                    reminder.id ?: ""
-                )
-            )
+            database.reminderDao().saveReminder(reminder.toDTO())
         }
 
         // WHEN - Get the reminders from the database
