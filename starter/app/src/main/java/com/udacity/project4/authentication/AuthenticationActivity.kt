@@ -29,8 +29,8 @@ class AuthenticationActivity : AppCompatActivity() {
 
     private val signInLauncher = registerForActivityResult(
         FirebaseAuthUIActivityResultContract()
-    ) { res ->
-        this.onSignInResult(res)
+    ) { result ->
+        this.onSignInResult(result)
     }
 
     private val customAuthLayout = AuthMethodPickerLayout
@@ -43,10 +43,10 @@ class AuthenticationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        if (FirebaseAuth.getInstance().currentUser != null) {
-            startRemindersActivity()
-        } else {
+        if (FirebaseAuth.getInstance().currentUser == null) {
             launchSignInFlow()
+        } else {
+            startRemindersActivity()
         }
 
         viewModel.authenticationState.observe(this) { authenticationState ->
@@ -96,11 +96,7 @@ class AuthenticationActivity : AppCompatActivity() {
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
         if (result.resultCode == Activity.RESULT_OK) {
-            Log.i(
-                TAG,
-                "Successfully signed in user " +
-                        "${getDisplayName()}!"
-            )
+            Log.i(TAG, "Successfully signed in user ${getDisplayName()}!")
         } else {
             Log.i(TAG, "Sign in unsuccessful ${response?.error?.errorCode}")
             // Sign in failed
