@@ -9,11 +9,7 @@ import com.google.android.gms.location.GeofencingEvent
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.utils.ACTION_GEOFENCE_EVENT
-import com.udacity.project4.utils.errorMessage
-import com.udacity.project4.utils.getGeofencingClient
-import com.udacity.project4.utils.sendNotification
+import com.udacity.project4.utils.*
 import org.koin.java.KoinJavaComponent.inject
 
 private const val TAG = "GeofenceTransitionsWrkr"
@@ -95,15 +91,7 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
             val reminderDTO = result.data
             //send a notification to the user with the reminder details
             sendNotification(
-                applicationContext, ReminderDataItem(
-                    reminderDTO.title,
-                    reminderDTO.description,
-                    reminderDTO.location,
-                    reminderDTO.latitude,
-                    reminderDTO.longitude,
-                    reminderDTO.geofenceId,
-                    reminderDTO.id
-                )
+                applicationContext, reminderDTO.toDataItem()
             )
         }
     }

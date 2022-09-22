@@ -25,3 +25,16 @@ fun ReminderDataItem.toDTO(): ReminderDTO =
                 id
             )
     }
+
+fun ReminderDTO.toDataItem(): ReminderDataItem =
+    this.run {
+        ReminderDataItem(
+            title,
+            description,
+            location,
+            latitude,
+            longitude,
+            geofenceId,
+            id
+        )
+    }
