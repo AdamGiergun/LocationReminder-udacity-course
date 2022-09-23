@@ -23,6 +23,7 @@ import com.udacity.project4.locationreminders.savereminder.EditReminderViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -90,6 +91,13 @@ class RemindersActivityTest :
         }
     }
 
+    @After
+    fun clearDb() {
+        runBlocking {
+            repository.deleteAllReminders()
+        }
+    }
+
 //    @Before
 //    fun registerIdlingResource() {
 //        IdlingRegistry.getInstance().register(
@@ -115,8 +123,8 @@ class RemindersActivityTest :
             "location1",
             0.0,
             1.0,
-            "test_id1",
-            "test1"
+            100,
+            "test_id1"
         )
         reminder.run {
             repository.saveReminder(
@@ -126,8 +134,8 @@ class RemindersActivityTest :
                     location,
                     latitude,
                     longitude,
-                    geofenceId,
-                    id ?: ""
+                    radiusInMeters,
+                    geofenceId
                 )
             )
         }

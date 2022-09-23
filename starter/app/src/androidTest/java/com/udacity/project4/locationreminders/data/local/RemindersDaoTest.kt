@@ -39,7 +39,7 @@ class RemindersDaoTest {
     fun closeDb() = database.close()
 
     @Test
-    fun saveReminderAndGetById() = runTest {
+    fun saveReminderRemoveGeofenceIdAndGetById() = runTest {
         // GIVEN - Insert a reminder
         val reminder = ReminderDataItem(
             "title1",
@@ -47,55 +47,23 @@ class RemindersDaoTest {
             "location1",
             1.0,
             2.0,
-            "test_geofence_id1",
-            "test_id1"
-
+            100,
+            "test_geofence_id1"
         )
         database.reminderDao().saveReminder(reminder.toDTO())
 
-        // WHEN - Get the reminder by id from the database
-        val loaded = database.reminderDao().getReminderById("test_id1")
+        // WHEN - Get the reminder by geofenceId from the database
+        val id = database.reminderDao().getReminderByGeofenceId("test_geofence_id1")?.id
+        val loaded = database.reminderDao().getReminderById(id ?: -1)
 
         // THEN - The loaded data contains the expected values
         assertThat(loaded).isNotNull()
-        assertThat(loaded?.id).isEqualTo(reminder.id)
         assertThat(loaded?.title).isEqualTo(reminder.title)
         assertThat(loaded?.description).isEqualTo(reminder.description)
         assertThat(loaded?.location).isEqualTo(reminder.location)
         assertThat(loaded?.latitude).isEqualTo(reminder.latitude)
         assertThat(loaded?.longitude).isEqualTo(reminder.longitude)
         assertThat(loaded?.geofenceId).isEqualTo(reminder.geofenceId)
-    }
-
-    @Test
-    fun updateReminderStateAndGetById() = runTest {
-        // GIVEN - Insert a reminder
-        val reminder = ReminderDataItem(
-            "title1",
-            "desc1",
-            "location1",
-            1.0,
-            2.0,
-            "test_geofence_id1",
-            "test_id1"
-        )
-        database.reminderDao().saveReminder(reminder.toDTO())
-
-        // WHEN - The reminder is deactivated
-        reminder.geofenceId?.let {
-            database.reminderDao().removeGeofenceId(it)
-        }
-
-        // THEN - The loaded data contains the expected values
-        val loaded = database.reminderDao().getReminderById("test_id1")
-        assertThat(loaded).isNotNull()
-        assertThat(loaded?.id).isEqualTo(reminder.id)
-        assertThat(loaded?.title).isEqualTo(reminder.title)
-        assertThat(loaded?.description).isEqualTo(reminder.description)
-        assertThat(loaded?.location).isEqualTo(reminder.location)
-        assertThat(loaded?.latitude).isEqualTo(reminder.latitude)
-        assertThat(loaded?.longitude).isEqualTo(reminder.longitude)
-        assertThat(loaded?.geofenceId).isEqualTo(null)
     }
 
     @Test
@@ -108,8 +76,8 @@ class RemindersDaoTest {
                 "location2",
                 2.0,
                 3.0,
-                "test_geofence_id2",
-                "test_id2"
+                100,
+                "test_geofence_id2"
             ),
             ReminderDataItem(
                 "title1",
@@ -117,8 +85,8 @@ class RemindersDaoTest {
                 "location1",
                 1.0,
                 2.0,
-                "test_geofence_id1",
-                "test_id1"
+                100,
+                "test_geofence_id1"
             ),
             ReminderDataItem(
                 "title3",
@@ -126,8 +94,8 @@ class RemindersDaoTest {
                 "location3",
                 3.0,
                 4.0,
-                "test_geofence_id3",
-                "test_id3"
+                100,
+                "test_geofence_id3"
             )
         )
 

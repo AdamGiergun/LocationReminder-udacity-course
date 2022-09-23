@@ -76,8 +76,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
                 "test1",
                 0.0,
                 0.0,
-                "test_id1",
-                "test1"
+                100,
+                "test_id1"
             ),
             ReminderDTO(
                 "test2",
@@ -85,8 +85,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
                 "test2",
                 180.0,
                 180.0,
-                null,
-                "test2"
+                100,
+                null
             )
         )
 
@@ -117,8 +117,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
                 "test1",
                 0.0,
                 0.0,
-                "test_id1",
-                "test1"
+                100,
+                "test_id1"
             ),
             ReminderDTO(
                 "test2",
@@ -126,8 +126,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
                 "test2",
                 180.0,
                 180.0,
-                null,
-                "test2"
+                100,
+                null
             )
         )
 
@@ -195,8 +195,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
             "test1",
             0.0,
             0.0,
-            "test_id1",
-            "test1"
+            100,
+            "test_id1"
         )
         fakeDataSource.saveReminder(reminder.toDTO())
 
@@ -229,8 +229,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
             "test2",
             0.0,
             0.0,
-            "test_id2",
-            null
+            100,
+            "test_id2"
         ).let { sourceData ->
             fakeDataSource.saveReminder(sourceData.toDTO())
             fakeDataSource.getReminder(sourceData.geofenceId ?: "").let { result ->
@@ -242,6 +242,7 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
                             location,
                             latitude,
                             longitude,
+                            radiusInMeters,
                             geofenceId,
                             result.data.id
                         )

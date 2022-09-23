@@ -62,8 +62,9 @@ class RemindersListViewModelTest : KoinTest {
                 "test1",
                 0.0,
                 0.0,
+                100,
                 "test_id",
-                "test1"
+                1
             ),
             ReminderDTO(
                 "test2",
@@ -71,8 +72,9 @@ class RemindersListViewModelTest : KoinTest {
                 "test2",
                 180.0,
                 180.0,
+                100,
                 null,
-                "test2"
+                2
             )
         ).forEach {
             fakeDataSource.saveReminder(it)
