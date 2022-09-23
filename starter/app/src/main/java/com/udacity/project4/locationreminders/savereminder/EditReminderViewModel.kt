@@ -22,7 +22,7 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     val selectedPOI = MutableLiveData<PointOfInterest?>()
     val reminderLatitude = MutableLiveData<Double?>()
     val reminderLongitude = MutableLiveData<Double?>()
-    val reminderRadiusInMeters= MutableLiveData<Int?>()
+    val reminderRadiusInMeters= MutableLiveData(100)
     val reminderGeofenceId = MutableLiveData<String?>()
     private var reminderId: Int = 0
 
