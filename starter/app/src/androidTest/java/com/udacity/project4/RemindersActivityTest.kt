@@ -166,6 +166,8 @@ class RemindersActivityTest :
             onView(withId(R.id.select_location)).perform(click())
             onView(withId(R.id.map)).perform(longClick())
             onView(withText("OK")).perform(click())
+            onView(withId(R.id.radius_in_meters))
+                .perform(replaceText("50"))
 
             onView(withId(R.id.saveReminder)).perform(click())
             //Thread.sleep(2100)

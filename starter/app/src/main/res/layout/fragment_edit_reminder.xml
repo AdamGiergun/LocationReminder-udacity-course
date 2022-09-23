@@ -36,7 +36,7 @@
             android:gravity="start"
             android:hint="@string/reminder_desc"
             android:importantForAutofill="no"
-            android:inputType="text"
+            android:inputType="textMultiLine"
             android:lines="10"
             android:text="@={viewModel.reminderDescription}"
             app:layout_constraintEnd_toEndOf="parent"
