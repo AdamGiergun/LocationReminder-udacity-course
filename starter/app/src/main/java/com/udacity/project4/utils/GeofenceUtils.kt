@@ -9,7 +9,6 @@ import com.udacity.project4.R
 import java.util.*
 
 const val ACTION_GEOFENCE_EVENT = "com.udacity.project4.action.ACTION_GEOFENCE_EVENT"
-const val GEOFENCE_RADIUS_IN_METERS = 100f
 
 /**
  * Returns the error string for a geofencing error code.
@@ -30,13 +29,13 @@ fun errorMessage(context: Context, errorCode: Int): String {
     }
 }
 
-fun getGeofencingRequest(latitude: Double, longitude: Double): GeofencingRequest {
+fun getGeofencingRequest(latitude: Double, longitude: Double, radiusInMeters: Int): GeofencingRequest {
     val geofence = Geofence.Builder()
         .setRequestId(UUID.randomUUID().toString())
         .setCircularRegion(
             latitude,
             longitude,
-            GEOFENCE_RADIUS_IN_METERS
+            radiusInMeters.toFloat()
         )
         .setExpirationDuration(Geofence.NEVER_EXPIRE)
         .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)

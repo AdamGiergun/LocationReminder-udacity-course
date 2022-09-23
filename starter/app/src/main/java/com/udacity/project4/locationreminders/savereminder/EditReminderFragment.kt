@@ -112,7 +112,8 @@ class EditReminderFragment : BaseFragment() {
                 val geofencingRequest = getGeofencingRequest(
                     // already checked by _viewModel.validateEnteredData())
                     _viewModel.reminderLatitude.value!!,
-                    _viewModel.reminderLongitude.value!!
+                    _viewModel.reminderLongitude.value!!,
+                    _viewModel.reminderRadiusInMeters.value!!
                 )
                 geofencingClient.addGeofences(
                     geofencingRequest,

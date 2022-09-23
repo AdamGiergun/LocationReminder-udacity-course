@@ -22,8 +22,9 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     val selectedPOI = MutableLiveData<PointOfInterest?>()
     val reminderLatitude = MutableLiveData<Double?>()
     val reminderLongitude = MutableLiveData<Double?>()
+    val reminderRadiusInMeters= MutableLiveData(100)
     val reminderGeofenceId = MutableLiveData<String?>()
-    private var reminderId: String? = null
+    private var reminderId: Int = 0
 
     private val reminderDataItem
         get() = ReminderDataItem(
@@ -32,6 +33,7 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
             reminderSelectedLocationStr.value,
             reminderLatitude.value,
             reminderLongitude.value,
+            reminderRadiusInMeters.value,
             reminderGeofenceId.value,
             reminderId
         )
@@ -78,8 +80,9 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
         selectedPOI.value = null
         reminderLatitude.value = null
         reminderLongitude.value = null
+        reminderRadiusInMeters.value = 100
         reminderGeofenceId.value = null
-        reminderId = null
+        reminderId = 0
         initialReminderLatitude = null
         initialReminderLongitude = null
         isReminderInitialized = false
@@ -100,7 +103,7 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     private fun saveOrUpdateReminder() {
         showLoading.value = true
         viewModelScope.launch {
-            if (reminderId == null) {
+            if (reminderId == 0) {
                 dataSource.saveReminder(reminderDataItem.toDTO())
             } else {
                 dataSource.updateReminder(reminderDataItem.toDTO())

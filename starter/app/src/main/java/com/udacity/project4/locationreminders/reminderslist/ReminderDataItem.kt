@@ -11,6 +11,7 @@ data class ReminderDataItem(
     var location: String?,
     var latitude: Double?,
     var longitude: Double?,
+    var radiusInMeters: Int?,
     var geofenceId: String? = null,
-    val id: String?
+    val id: Int = 0
 ) : Serializable

@@ -19,7 +19,7 @@ interface RemindersDao {
      * @return the reminder object with the reminderId
      */
     @Query("SELECT * FROM reminders where entry_id = :reminderId")
-    fun getReminderById(reminderId: String): ReminderDTO?
+    fun getReminderById(reminderId: Int): ReminderDTO?
 
     /**
      * @param geofenceId the id of the reminder's geofence
