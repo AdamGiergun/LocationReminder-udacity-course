@@ -57,4 +57,5 @@
     <string name="location">Location:</string>
     <string name="unauthenticated">User not authenticated</string>
     <string name="add_location_reminder_button">Add location reminder button</string>
+    <string name="map_drawable_desc">Some fancy picture with someone pointing something on a paper map</string>
 </resources>

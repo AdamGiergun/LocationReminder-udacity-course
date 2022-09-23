@@ -1,27 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/auth_picker_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="@color/black">
+
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/map_drawable_desc"
+        android:src="@drawable/map"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/google_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/white"
         android:drawableLeft="@drawable/common_google_signin_btn_icon_light"
         android:text="@string/fui_sign_in_with_google"
-        tools:ignore="RtlHardcoded" />
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toTopOf="@id/email_button"
+        app:layout_constraintEnd_toEndOf="@id/email_button"
+        app:layout_constraintStart_toStartOf="@id/email_button" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/email_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_margin="24dp"
+        android:backgroundTint="@color/colorAccent"
         android:drawableLeft="@drawable/fui_ic_mail_white_24dp"
         android:text="@string/fui_sign_in_with_email"
-        tools:ignore="RtlHardcoded" />
-</LinearLayout>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
