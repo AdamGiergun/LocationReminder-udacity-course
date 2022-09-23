@@ -12,9 +12,9 @@ class InactivateReminderWorker(context: Context, workerParameters: WorkerParamet
     CoroutineWorker(context, workerParameters) {
 
     companion object {
-        fun buildWorkRequest(requestId: String): OneTimeWorkRequest {
+        fun buildWorkRequest(geofenceId: String): OneTimeWorkRequest {
             val data =
-                Data.Builder().putString(GEOFENCE_ID, requestId).build()
+                Data.Builder().putString(GEOFENCE_ID, geofenceId).build()
             return OneTimeWorkRequestBuilder<InactivateReminderWorker>().run {
                 setInputData(data)
                 setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)

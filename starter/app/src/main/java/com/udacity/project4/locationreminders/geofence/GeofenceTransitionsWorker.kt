@@ -1,7 +1,6 @@
 package com.udacity.project4.locationreminders.geofence
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.work.*
 import com.google.android.gms.location.Geofence
@@ -9,66 +8,63 @@ import com.google.android.gms.location.GeofencingEvent
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import com.udacity.project4.utils.*
+import com.udacity.project4.utils.errorMessage
+import com.udacity.project4.utils.getGeofencingClient
+import com.udacity.project4.utils.sendNotification
+import com.udacity.project4.utils.toDataItem
 import org.koin.java.KoinJavaComponent.inject
 
 private const val TAG = "GeofenceTransitionsWrkr"
 const val GEOFENCE_ID = "requestId"
-private const val UNIQUE_WORK_NAME = "InactivateReminderWorker"
 
 class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
 
     companion object {
-        fun buildWorkRequest(context: Context, intent: Intent): OneTimeWorkRequest? {
-            if (intent.action == ACTION_GEOFENCE_EVENT) {
-                val geofencingEvent = GeofencingEvent.fromIntent(intent)
+        fun buildWorkRequest(
+            context: Context,
+            geofencingEvent: GeofencingEvent
+        ): OneTimeWorkRequest? {
+            if (geofencingEvent.hasError()) {
+                val errorMessage = errorMessage(context, geofencingEvent.errorCode)
+                Log.e(TAG, errorMessage)
+            }
 
-                if (geofencingEvent == null) {
-                    val errorMessage = errorMessage(context, 0)
-                    Log.e(TAG, errorMessage)
-                } else {
-                    if (geofencingEvent.hasError()) {
-                        val errorMessage = errorMessage(context, geofencingEvent.errorCode)
-                        Log.e(TAG, errorMessage)
-                    }
-
-                    // Test that the reported transition was of interest.
-                    if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-                        geofencingEvent.triggeringGeofences?.let {
-                            val data =
-                                Data.Builder().putString(GEOFENCE_ID, it.first().requestId).build()
-                            return OneTimeWorkRequestBuilder<GeofenceTransitionsWorker>().run {
-                                setInputData(data)
-                                setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                                build()
-                            }
-                        }
-                    } else {
-                        Log.e(
-                            TAG,
-                            context.getString(
-                                R.string.geofence_transition_invalid_type,
-                                geofencingEvent.geofenceTransition
-                            )
-                        )
+            // Test that the reported transition was of interest.
+            if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+                geofencingEvent.triggeringGeofences?.let {
+                    val geofenceId = it.first().requestId
+                    val data =
+                        Data.Builder().putString(GEOFENCE_ID, geofenceId).build()
+                    return OneTimeWorkRequestBuilder<GeofenceTransitionsWorker>().run {
+                        setInputData(data)
+                        setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                        build()
                     }
                 }
+            } else {
+                Log.e(
+                    TAG,
+                    context.getString(
+                        R.string.geofence_transition_invalid_type,
+                        geofencingEvent.geofenceTransition
+                    )
+                )
             }
             return null
         }
     }
 
     override suspend fun doWork(): Result {
-        inputData.getString(GEOFENCE_ID)?.let { requestId ->
+        inputData.getString(GEOFENCE_ID)?.let { geofenceId ->
             val geofencingClient = getGeofencingClient(applicationContext)
-            geofencingClient.removeGeofences(listOf(requestId))
+            geofencingClient.removeGeofences(listOf(geofenceId))
                 .addOnSuccessListener {
-                    InactivateReminderWorker.buildWorkRequest(requestId).let { workRequest ->
+                    InactivateReminderWorker.buildWorkRequest(geofenceId).let { workRequest ->
                         WorkManager
                             .getInstance(applicationContext)
                             .enqueueUniqueWork(
-                                UNIQUE_WORK_NAME,
+                                "LocationReminderRemove_$geofenceId",
                                 ExistingWorkPolicy.KEEP,
                                 workRequest
                             )
@@ -78,7 +74,7 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
                 .addOnFailureListener { exception ->
                     Log.d(TAG, "Geofence not removed ${exception.localizedMessage}")
                 }
-            sendNotification(requestId)
+            sendNotification(geofenceId)
         }
         return Result.success()
     }

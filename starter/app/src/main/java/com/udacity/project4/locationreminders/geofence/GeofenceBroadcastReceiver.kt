@@ -3,8 +3,13 @@ package com.udacity.project4.locationreminders.geofence
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
+import com.google.android.gms.location.GeofencingEvent
+import com.udacity.project4.utils.ACTION_GEOFENCE_EVENT
+import com.udacity.project4.utils.errorMessage
+import java.util.*
 
 /**
  * Triggered by the Geofence.  Since we can have many Geofences at once, we pull the request
@@ -14,19 +19,28 @@ import androidx.work.WorkManager
  * and handle the geofencing in the background.
  */
 
-private const val UNIQUE_WORK_NAME = "GeofenceTransitionsWorker"
+private const val TAG = "GeofenceBroadcastRcvr"
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-
-        GeofenceTransitionsWorker.buildWorkRequest(context, intent)?.let { workRequest ->
-            WorkManager
-                .getInstance(context)
-                .enqueueUniqueWork(
-                    UNIQUE_WORK_NAME,
-                    ExistingWorkPolicy.KEEP,
-                    workRequest
-                )
+        if (intent.action == ACTION_GEOFENCE_EVENT) {
+            GeofencingEvent.fromIntent(intent).let { geofencingEvent ->
+                if (geofencingEvent == null) {
+                    val errorMessage = errorMessage(context, 0)
+                    Log.e(TAG, errorMessage)
+                } else {
+                    GeofenceTransitionsWorker.buildWorkRequest(context, geofencingEvent)
+                        ?.let { workRequest ->
+                            WorkManager
+                                .getInstance(context)
+                                .enqueueUniqueWork(
+                                    "LocationReminderReceive_${UUID.randomUUID()}",
+                                    ExistingWorkPolicy.KEEP,
+                                    workRequest
+                                )
+                        }
+                }
+            }
         }
     }
 }
