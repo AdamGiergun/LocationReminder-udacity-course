@@ -43,26 +43,12 @@ class AuthenticationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        if (FirebaseAuth.getInstance().currentUser == null) {
+        binding.loginButton.setOnClickListener {
             launchSignInFlow()
-        } else {
-            startRemindersActivity()
         }
 
-        viewModel.authenticationState.observe(this) { authenticationState ->
-            when (authenticationState) {
-                AuthenticationViewModel.AuthenticationState.AUTHENTICATED -> {
-                    startRemindersActivity()
-                }
-                AuthenticationViewModel.AuthenticationState.UNAUTHENTICATED -> {
-                    binding.authText.text =
-                        getString(R.string.unauthenticated)
-                }
-                else -> {
-                    binding.authText.text =
-                        getString(R.string.authentication_failed)
-                }
-            }
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            startRemindersActivity()
         }
     }
 
@@ -75,6 +61,7 @@ class AuthenticationActivity : AppCompatActivity() {
     }
 
     private fun launchSignInFlow() {
+
         // Give users the option to sign in / register with their email or Google account. If users
         // choose to register with their email, they will need to create a password as well.
         val providers = arrayListOf(
@@ -91,6 +78,22 @@ class AuthenticationActivity : AppCompatActivity() {
             .setAvailableProviders(providers)
             .build()
         signInLauncher.launch(signInIntent)
+
+        viewModel.authenticationState.observe(this) { authenticationState ->
+            when (authenticationState) {
+                AuthenticationViewModel.AuthenticationState.AUTHENTICATED -> {
+                    startRemindersActivity()
+                }
+                AuthenticationViewModel.AuthenticationState.UNAUTHENTICATED -> {
+                    binding.authText.text =
+                        getString(R.string.unauthenticated)
+                }
+                else -> {
+                    binding.authText.text =
+                        getString(R.string.authentication_failed)
+                }
+            }
+        }
     }
 
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
