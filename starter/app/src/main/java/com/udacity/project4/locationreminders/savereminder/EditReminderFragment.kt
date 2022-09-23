@@ -99,11 +99,11 @@ class EditReminderFragment : BaseFragment() {
                     _viewModel.reminderGeofenceId.value = null
                     geofencingClient.removeGeofences(listOf(requestId))
                         .addOnSuccessListener {
-                            Log.d(logTag, "Geofence removed")
+                            Log.d(logTag, "Old geofence removed")
                         }
                         .addOnFailureListener { exception ->
                             handleGeofenceClientException(exception)
-                            Log.d(logTag, "Geofence not removed ${exception.localizedMessage}")
+                            Log.d(logTag, "Old geofence not removed ${exception.localizedMessage}")
                         }
                 }
             }
