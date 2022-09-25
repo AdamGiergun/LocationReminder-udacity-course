@@ -90,6 +90,19 @@
             app:layout_constraintTop_toTopOf="@id/radius_in_meters" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/deleteReminder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_normal"
+            android:contentDescription="@string/add_location_reminder_button"
+            android:fadeVisible="@{!viewModel.showLoading.booleanValue()}"
+            android:src="@drawable/ic_baseline_delete_forever_24"
+            app:fabSize="normal"
+            app:layout_anchorGravity="bottom|right|end"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/saveReminder" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/saveReminder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
