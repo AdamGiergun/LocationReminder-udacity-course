@@ -2,6 +2,8 @@ package com.udacity.project4.utils
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.content.Intent
+import android.os.Build.VERSION.SDK_INT
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -61,4 +63,9 @@ inline fun <reified T> Any?.tryCast(onCast: T.() -> Unit) {
     if (this is T) {
         onCast()
     }
+}
+
+inline fun <reified T : java.io.Serializable> Intent.serializable(key: String): T? = when {
+    SDK_INT >= 33 -> getSerializableExtra(key, T::class.java)
+    else -> @Suppress("DEPRECATION") getSerializableExtra(key) as? T
 }
