@@ -61,10 +61,18 @@ class SelectLocationFragment : BaseFragment() {
             _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
         else {
             val permission =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && Manifest.permission.ACCESS_BACKGROUND_LOCATION in permissions)
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                else
-                    Manifest.permission.ACCESS_FINE_LOCATION
+                when {
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                            Manifest.permission.ACCESS_BACKGROUND_LOCATION in permissions ->
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION in permissions ->
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            Manifest.permission.POST_NOTIFICATIONS in permissions ->
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    else ->
+                        null
+                }
 
             _viewModel.showToast.value =
                 if (permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION)
@@ -72,7 +80,7 @@ class SelectLocationFragment : BaseFragment() {
                 else
                     "Fine location is needed"
 
-            if (shouldShowRequestPermissionRationale(permission)) {
+            if (permission != null && shouldShowRequestPermissionRationale(permission)) {
                 _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
             } else {
                 appPermissionsSettingsRequest.launch(
@@ -151,6 +159,8 @@ class SelectLocationFragment : BaseFragment() {
                                     val bgrLoc =
                                         isBackgroundLocationPermissionGranted(requireContext())
 //                                        val gps = states.isGpsUsable
+                                    val notifications =
+                                        isPostNotificationsPermissionGranted(requireContext())
 
                                     if (!fineLoc)
                                         _viewModel.setLocationState(LocationState.FINE_LOCATION_NOT_PERMITTED)
@@ -158,7 +168,10 @@ class SelectLocationFragment : BaseFragment() {
                                     if (!bgrLoc)
                                         _viewModel.setLocationState(LocationState.BACKGROUND_LOCATION_NOT_PERMITTED)
 
-                                    if (fineLoc and bgrLoc)
+                                    if (!notifications)
+                                        _viewModel.setLocationState(LocationState.NOTIFICATIONS_NOT_PERMITTED)
+
+                                    if (fineLoc and bgrLoc and notifications)
                                         _viewModel.setLocationState(LocationState.ENABLED)
 
                                 } else {
@@ -200,6 +213,20 @@ class SelectLocationFragment : BaseFragment() {
                                 Manifest.permission.ACCESS_BACKGROUND_LOCATION
                             )
                         )
+                    } else {
+                        _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
+                    }
+                }
+
+                LocationState.NOTIFICATIONS_NOT_PERMITTED -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        permissionsRequest.launch(
+                            arrayOf(
+                                Manifest.permission.POST_NOTIFICATIONS
+                            )
+                        )
+                    } else {
+                        _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
                     }
                 }
 

@@ -7,6 +7,8 @@
     -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- The POST_NOTIFICATIONS permission is required for notifications functionality to work on T+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- The BACKGROUND_LOCATION permission is required for geofencing functionality to work on Q+ -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
