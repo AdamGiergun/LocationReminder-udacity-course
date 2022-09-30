@@ -96,6 +96,7 @@
             android:layout_margin="@dimen/margin_normal"
             android:contentDescription="@string/add_location_reminder_button"
             android:fadeVisible="@{!viewModel.showLoading.booleanValue()}"
+            android:onClick="@{viewModel::deleteReminder}"
             android:src="@drawable/ic_baseline_delete_forever_24"
             app:fabSize="normal"
             app:layout_anchorGravity="bottom|right|end"

@@ -1,6 +1,7 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.app.Application
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -11,6 +12,7 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.LocationState
+import com.udacity.project4.utils.getGeofencingClient
 import com.udacity.project4.utils.toDTO
 import kotlinx.coroutines.launch
 
@@ -91,6 +93,17 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
         initialReminderLongitude = null
         initialRadiusInMeters = null
         isReminderInitialized = false
+    }
+
+    fun deleteReminder(view: View) {
+        viewModelScope.launch {
+            reminderGeofenceId.value?.let { geofenceId ->
+                getGeofencingClient(view.context)
+                    .removeGeofences(listOf(geofenceId))
+            }
+            dataSource.deleteReminder(reminderDataItem.toDTO())
+            navigationCommand.value = NavigationCommand.Back
+        }
     }
 
     /**
