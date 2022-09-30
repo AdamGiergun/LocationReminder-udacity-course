@@ -5,8 +5,9 @@ import android.app.Application
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.*
-import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -20,6 +21,9 @@ import com.udacity.project4.locationreminders.data.local.RemindersLocalRepositor
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.EditReminderViewModel
+import com.udacity.project4.util.DataBindingIdlingResource
+import com.udacity.project4.utils.EspressoIdlingResource
+import com.udacity.project4.util.monitorActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -43,7 +47,7 @@ class RemindersActivityTest :
     AutoCloseKoinTest() {// Extended Koin Test - embed autoclose @after method to close Koin after every test
 
     private lateinit var repository: ReminderDataSource
-//    private val dataBindingIdlingResource = DataBindingIdlingResource()
+    private val dataBindingIdlingResource = DataBindingIdlingResource()
 
     @get:Rule
     val grantAccessLocationPermissionsRule: GrantPermissionRule = GrantPermissionRule.grant(
@@ -98,25 +102,26 @@ class RemindersActivityTest :
         }
     }
 
-//    @Before
-//    fun registerIdlingResource() {
-//        IdlingRegistry.getInstance().register(
-//            EspressoIdlingResource.countingIdlingResource,
-//            dataBindingIdlingResource
-//        )
-//    }
-//
-//    @After
-//    fun unregisterIdlingResource() {
-//        IdlingRegistry.getInstance().unregister(
-//            EspressoIdlingResource.countingIdlingResource,
-//            dataBindingIdlingResource
-//        )
-//    }
+    @Before
+    fun registerIdlingResource() {
+        IdlingRegistry.getInstance().register(
+            EspressoIdlingResource.countingIdlingResource,
+            dataBindingIdlingResource
+        )
+    }
+
+    @After
+    fun unregisterIdlingResource() {
+        IdlingRegistry.getInstance().unregister(
+            EspressoIdlingResource.countingIdlingResource,
+            dataBindingIdlingResource
+        )
+    }
 
 
     @Test
     fun editReminder(): Unit = runTest {
+
         val reminder = ReminderDataItem(
             "title1",
             "description1",
@@ -141,13 +146,16 @@ class RemindersActivityTest :
         }
 
         ActivityScenario.launch(RemindersActivity::class.java).run {
+            dataBindingIdlingResource.monitorActivity(this)
+
             onView(withText("title1")).perform(click())
+
             onView(withId(R.id.reminder_title))
-                .check(ViewAssertions.matches(withText("title1")))
+                .check(matches(withText("title1")))
             onView(withId(R.id.reminder_description))
-                .check(ViewAssertions.matches(withText("description1")))
+                .check(matches(withText("description1")))
             onView(withId(R.id.selected_location))
-                .check(ViewAssertions.matches(withText("location1")))
+                .check(matches(withText("location1")))
 
             close()
         }
@@ -157,6 +165,7 @@ class RemindersActivityTest :
     fun createOneReminder_deleteReminder() = runTest {
 
         ActivityScenario.launch(RemindersActivity::class.java).run {
+            dataBindingIdlingResource.monitorActivity(this)
 
             onView(withId(R.id.addReminderFAB)).perform(click())
             onView(withId(R.id.reminder_title))
@@ -173,9 +182,9 @@ class RemindersActivityTest :
             //Thread.sleep(2100)
             onView(withText("TITLE2")).perform(click())
             onView(withId(R.id.reminder_title))
-                .check(ViewAssertions.matches(withText("TITLE2")))
+                .check(matches(withText("TITLE2")))
             onView(withId(R.id.reminder_description))
-                .check(ViewAssertions.matches(withText("DESCRIPTION2")))
+                .check(matches(withText("DESCRIPTION2")))
 //            Thread.sleep(3000)
 
 //            onView(withId(R.id.menu_delete)).perform(click())

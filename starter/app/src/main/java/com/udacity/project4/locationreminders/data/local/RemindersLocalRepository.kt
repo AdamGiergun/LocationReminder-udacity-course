@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.data.local
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
+import com.udacity.project4.utils.EspressoIdlingResource.wrapEspressoIdlingResource
 import kotlinx.coroutines.*
 
 /**
@@ -23,10 +24,12 @@ class RemindersLocalRepository(
      * @return Result the holds a Success with all the reminders or an Error object with the error message
      */
     override suspend fun getReminders(): Result<List<ReminderDTO>> = withContext(ioDispatcher) {
-        return@withContext try {
-            Result.Success(remindersDao.getReminders())
-        } catch (ex: Exception) {
-            Result.Error(ex.localizedMessage)
+        wrapEspressoIdlingResource {
+            return@withContext try {
+                Result.Success(remindersDao.getReminders())
+            } catch (ex: Exception) {
+                Result.Error(ex.localizedMessage)
+            }
         }
     }
 
@@ -36,7 +39,9 @@ class RemindersLocalRepository(
      */
     override suspend fun saveReminder(reminder: ReminderDTO) =
         withContext(ioDispatcher) {
-            remindersDao.saveReminder(reminder)
+            wrapEspressoIdlingResource {
+                remindersDao.saveReminder(reminder)
+            }
         }
 
     /**
@@ -44,26 +49,31 @@ class RemindersLocalRepository(
      * @param geofenceId to be used to get the reminder
      * @return Result the holds a Success object with the Reminder or an Error object with the error message
      */
-    override suspend fun getReminder(geofenceId: String): Result<ReminderDTO> = withContext(ioDispatcher) {
-        try {
-            val reminder = remindersDao.getReminderByGeofenceId(geofenceId)
-            if (reminder != null) {
-                return@withContext Result.Success(reminder)
-            } else {
-                return@withContext Result.Error("Reminder not found!")
+    override suspend fun getReminder(geofenceId: String): Result<ReminderDTO> =
+        withContext(ioDispatcher) {
+            wrapEspressoIdlingResource {
+                try {
+                    val reminder = remindersDao.getReminderByGeofenceId(geofenceId)
+                    if (reminder != null) {
+                        return@withContext Result.Success(reminder)
+                    } else {
+                        return@withContext Result.Error("Reminder not found!")
+                    }
+                } catch (e: Exception) {
+                    return@withContext Result.Error(e.localizedMessage)
+                }
             }
-        } catch (e: Exception) {
-            return@withContext Result.Error(e.localizedMessage)
         }
-    }
 
     /**
      * Reset reminder's geofenceId
      * @param geofenceId to be reset
      */
     override suspend fun removeGeofenceId(geofenceId: String) {
-        withContext(ioDispatcher) {
-            remindersDao.removeGeofenceId(geofenceId)
+        wrapEspressoIdlingResource {
+            withContext(ioDispatcher) {
+                remindersDao.removeGeofenceId(geofenceId)
+            }
         }
     }
 
@@ -72,8 +82,10 @@ class RemindersLocalRepository(
      * @param reminder to be updated
      */
     override suspend fun updateReminder(reminder: ReminderDTO) {
-        withContext(ioDispatcher) {
-            remindersDao.updateReminder(reminder)
+        wrapEspressoIdlingResource {
+            withContext(ioDispatcher) {
+                remindersDao.updateReminder(reminder)
+            }
         }
     }
 
@@ -82,8 +94,10 @@ class RemindersLocalRepository(
      * @param reminder to be deleted
      */
     override suspend fun deleteReminder(reminder: ReminderDTO) {
-        withContext(ioDispatcher) {
-            remindersDao.deleteAllReminders()
+        wrapEspressoIdlingResource {
+            withContext(ioDispatcher) {
+                remindersDao.deleteAllReminders()
+            }
         }
     }
 
@@ -91,8 +105,10 @@ class RemindersLocalRepository(
      * Deletes all the reminders in the db
      */
     override suspend fun deleteAllReminders() {
-        withContext(ioDispatcher) {
-            remindersDao.deleteAllReminders()
+        wrapEspressoIdlingResource {
+            withContext(ioDispatcher) {
+                remindersDao.deleteAllReminders()
+            }
         }
     }
 }

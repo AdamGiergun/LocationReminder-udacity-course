@@ -8,6 +8,7 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.PerformException
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.contrib.RecyclerViewActions
@@ -19,10 +20,14 @@ import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.util.DataBindingIdlingResource
+import com.udacity.project4.util.monitorFragment
+import com.udacity.project4.utils.EspressoIdlingResource
 import com.udacity.project4.utils.toDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -44,11 +49,13 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
 
     private val fakeDataSource: ReminderDataSource by inject()
 
+    private val dataBindingIdlingResource = DataBindingIdlingResource()
+
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
     @Before
-    fun setUp() {
+    fun setUpKoin() {
         stopKoin()
 
         val viewModelModule = module {
@@ -64,6 +71,22 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
         startKoin {
             modules(viewModelModule)
         }
+    }
+
+    @Before
+    fun registerIdlingResource() {
+        IdlingRegistry.getInstance().register(
+            EspressoIdlingResource.countingIdlingResource,
+            dataBindingIdlingResource
+        )
+    }
+
+    @After
+    fun unregisterIdlingResource() {
+        IdlingRegistry.getInstance().unregister(
+            EspressoIdlingResource.countingIdlingResource,
+            dataBindingIdlingResource
+        )
     }
 
     // test the displayed data on the UI.
@@ -95,6 +118,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
         }
         // GIVEN: List of items on the reminders screen
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme).run {
+            dataBindingIdlingResource.monitorFragment(this)
+
             // WHEN: Attempt to scroll to an item that contains the special text (not present in the list).
             // THEN: scrollTo will fail if no item matches.
             onView(withId(R.id.remindersRecyclerView))
@@ -136,6 +161,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
         }
         // GIVEN: List of items on the reminders screen
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme).run {
+            dataBindingIdlingResource.monitorFragment(this)
+
             // WHEN: Attempt to scroll to items that contain the special text.
             // THEN: scrollTo will succeed
             list.forEach { reminderDTO ->
@@ -168,6 +195,7 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
         // GIVEN empty datastore
         // WHEN fragment starts
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme).run {
+            dataBindingIdlingResource.monitorFragment(this)
 
             // THAN snackbar is shown
             val snackbar = KView {
@@ -202,6 +230,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
 
         // GIVEN: List of items on the reminders screen
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme).run {
+            dataBindingIdlingResource.monitorFragment(this)
+
             val navController = mock(NavController::class.java)
 
             onFragment {
@@ -253,6 +283,8 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
 
         // GIVEN: List of items on the reminders screen
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme).run {
+            dataBindingIdlingResource.monitorFragment(this)
+
             val navController = mock(NavController::class.java)
 
             onFragment {
