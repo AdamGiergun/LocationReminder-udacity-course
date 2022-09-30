@@ -27,16 +27,16 @@ abstract class BaseFragment : Fragment() {
         }
 
         _viewModel.showSnackBar.observe(this) {
-            Snackbar.make(requireView(), it, Snackbar.LENGTH_LONG).also { newSnackbar ->
-                snackbar = newSnackbar
-                newSnackbar.show()
+            Snackbar.make(requireView(), it, Snackbar.LENGTH_LONG).run {
+                snackbar = this
+                show()
             }
         }
 
         _viewModel.showSnackBarInt.observe(this) {
-            Snackbar.make(requireView(), getString(it), Snackbar.LENGTH_LONG).also { newSnackbar ->
-                snackbar = newSnackbar
-                newSnackbar.show()
+            Snackbar.make(requireView(), getString(it), Snackbar.LENGTH_LONG).run {
+                snackbar = this
+                show()
             }
         }
 
