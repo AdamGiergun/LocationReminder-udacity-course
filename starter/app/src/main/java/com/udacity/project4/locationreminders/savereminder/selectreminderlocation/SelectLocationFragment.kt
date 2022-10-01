@@ -153,30 +153,35 @@ class SelectLocationFragment : BaseFragment() {
                         LocationServices.getSettingsClient(requireContext())
                     client.checkLocationSettings(builder.build()).apply {
                         addOnSuccessListener { locationSettingsResponse ->
-                            locationSettingsResponse.locationSettingsStates?.let { states ->
-                                if (states.isGpsPresent) {
-                                    val fineLoc = isFineLocationPermissionGranted(requireContext())
-                                    val bgrLoc =
-                                        isBackgroundLocationPermissionGranted(requireContext())
+                            try {
+                                locationSettingsResponse.locationSettingsStates?.let { states ->
+                                    if (states.isGpsPresent) {
+                                        val fineLoc =
+                                            isFineLocationPermissionGranted(requireContext())
+                                        val bgrLoc =
+                                            isBackgroundLocationPermissionGranted(requireContext())
 //                                        val gps = states.isGpsUsable
-                                    val notifications =
-                                        isPostNotificationsPermissionGranted(requireContext())
+                                        val notifications =
+                                            isPostNotificationsPermissionGranted(requireContext())
 
-                                    if (!fineLoc)
-                                        _viewModel.setLocationState(LocationState.FINE_LOCATION_NOT_PERMITTED)
+                                        if (!fineLoc)
+                                            _viewModel.setLocationState(LocationState.FINE_LOCATION_NOT_PERMITTED)
 
-                                    if (!bgrLoc)
-                                        _viewModel.setLocationState(LocationState.BACKGROUND_LOCATION_NOT_PERMITTED)
+                                        if (!bgrLoc)
+                                            _viewModel.setLocationState(LocationState.BACKGROUND_LOCATION_NOT_PERMITTED)
 
-                                    if (!notifications)
-                                        _viewModel.setLocationState(LocationState.NOTIFICATIONS_NOT_PERMITTED)
+                                        if (!notifications)
+                                            _viewModel.setLocationState(LocationState.NOTIFICATIONS_NOT_PERMITTED)
 
-                                    if (fineLoc and bgrLoc and notifications)
-                                        _viewModel.setLocationState(LocationState.ENABLED)
+                                        if (fineLoc and bgrLoc and notifications)
+                                            _viewModel.setLocationState(LocationState.ENABLED)
 
-                                } else {
-                                    _viewModel.setLocationState(LocationState.GPS_NOT_PRESENT)
+                                    } else {
+                                        _viewModel.setLocationState(LocationState.GPS_NOT_PRESENT)
+                                    }
                                 }
+                            } catch (e: IllegalStateException) {
+                                Log.d(TAG, e.localizedMessage ?: "Unknown error")
                             }
                         }
 
