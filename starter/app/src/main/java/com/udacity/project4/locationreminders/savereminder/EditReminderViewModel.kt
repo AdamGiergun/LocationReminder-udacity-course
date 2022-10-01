@@ -1,23 +1,33 @@
 package com.udacity.project4.locationreminders.savereminder
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.app.PendingIntent
+import android.content.Intent
+import android.os.Build
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
+import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.utils.LocationState
-import com.udacity.project4.utils.getGeofencingClient
-import com.udacity.project4.utils.toDTO
+import com.udacity.project4.utils.*
 import kotlinx.coroutines.launch
 
 class EditReminderViewModel(val app: Application, private val dataSource: ReminderDataSource) :
     BaseViewModel(app) {
+
+    val resolvableApiException = MutableLiveData<ResolvableApiException?>()
+
     val reminderTitle = MutableLiveData<String?>()
     val reminderDescription = MutableLiveData<String?>()
     val reminderSelectedLocationStr = MutableLiveData<String?>()
@@ -25,7 +35,8 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     val reminderLatitude = MutableLiveData<Double?>()
     val reminderLongitude = MutableLiveData<Double?>()
     val reminderRadiusInMeters= MutableLiveData(100)
-    val reminderGeofenceId = MutableLiveData<String?>()
+
+    private val reminderGeofenceId = MutableLiveData<String?>()
     private var reminderId: Int = 0
 
     private val reminderDataItem
@@ -40,10 +51,28 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
             reminderId
         )
 
+    private val geofencingClient = getGeofencingClient(app.applicationContext)
+    private val geofencePendingIntent: PendingIntent by lazy {
+        val intent = Intent(app.applicationContext, GeofenceBroadcastReceiver::class.java).apply {
+            action = ACTION_GEOFENCE_EVENT
+        }
+
+        PendingIntent.getBroadcast(
+            app.applicationContext,
+            0,
+            intent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            } else {
+                PendingIntent.FLAG_UPDATE_CURRENT
+            }
+        )
+    }
+
     private var initialReminderLatitude: Double? = null
     private var initialReminderLongitude: Double? = null
     private var initialRadiusInMeters: Int? = null
-    val isLocationChanged
+    private val isLocationChanged
         get() = !(reminderLatitude.value == initialReminderLatitude &&
                 reminderLongitude.value == initialReminderLongitude &&
                 reminderRadiusInMeters.value == initialRadiusInMeters)
@@ -104,6 +133,80 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
             dataSource.deleteReminder(reminderDataItem.toDTO())
             navigationCommand.value = NavigationCommand.Back
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun saveReminder(@Suppress("UNUSED_PARAMETER") view: View) {
+        if (validateEnteredData()) {
+            if (isLocationChanged) {
+                reminderGeofenceId.value?.let { requestId ->
+                    val logTag = this::class.java.name
+                    reminderGeofenceId.value = null
+                    geofencingClient.removeGeofences(listOf(requestId))
+                        .addOnSuccessListener {
+                            Log.d(logTag, "Old geofence removed")
+                        }
+                        .addOnFailureListener { exception ->
+                            handleGeofenceClientException(exception)
+                            Log.d(logTag, "Old geofence not removed ${exception.localizedMessage}")
+                        }
+                }
+            }
+
+            if (reminderGeofenceId.value == null) {
+                val geofencingRequest = getGeofencingRequest(
+                    // already checked by _viewModel.validateEnteredData())
+                    reminderLatitude.value!!,
+                    reminderLongitude.value!!,
+                    reminderRadiusInMeters.value!!
+                )
+                geofencingClient.addGeofences(
+                    geofencingRequest,
+                    geofencePendingIntent
+                ).apply {
+                    addOnSuccessListener {
+                        showSnackBar.value = "Geofence added"
+                        reminderGeofenceId.value =
+                            geofencingRequest.geofences.first().requestId
+                        validateAndSaveReminder()
+                    }
+                    addOnFailureListener { exception ->
+                        handleGeofenceClientException(exception)
+                    }
+                }
+            } else {
+                validateAndSaveReminder()
+            }
+        }
+    }
+
+    private fun handleGeofenceClientException(exception: java.lang.Exception) {
+        if (exception is ApiException) {
+            when (exception.statusCode) {
+                GeofenceStatusCodes.GEOFENCE_INSUFFICIENT_LOCATION_PERMISSION -> {
+                    if (exception is ResolvableApiException)
+                        resolvableApiException.value = exception
+                }
+
+                GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE ->
+                    showSnackBarInt.value =
+                        R.string.geofence_not_available
+
+                GeofenceStatusCodes.GEOFENCE_REQUEST_TOO_FREQUENT ->
+                    showSnackBarInt.value =
+                        R.string.geofence_request_too_frequent
+
+                GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES ->
+                    showSnackBarInt.value =
+                        R.string.geofence_too_many_geofences
+
+                GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS ->
+                    showSnackBarInt.value =
+                        R.string.geofence_too_many_pending_intents
+            }
+        } else
+            showSnackBarInt.value =
+                R.string.error_adding_geofence
     }
 
     /**
