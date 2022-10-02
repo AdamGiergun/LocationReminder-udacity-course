@@ -13,7 +13,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.GeofenceStatusCodes
-import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.base.NavigationCommand
@@ -28,28 +27,27 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
 
     val resolvableApiException = MutableLiveData<ResolvableApiException?>()
 
-    val reminderTitle = MutableLiveData<String?>()
-    val reminderDescription = MutableLiveData<String?>()
-    val reminderSelectedLocationStr = MutableLiveData<String?>()
-    val selectedPOI = MutableLiveData<PointOfInterest?>()
-    val reminderLatitude = MutableLiveData<Double?>()
-    val reminderLongitude = MutableLiveData<Double?>()
-    val reminderRadiusInMeters= MutableLiveData(100)
+    private val editedReminder = EditedReminder()
 
-    private val reminderGeofenceId = MutableLiveData<String?>()
-    private var reminderId: Int = 0
+    val reminderTitle = editedReminder.title
+    val reminderDescription = editedReminder.description
+    val reminderSelectedLocationStr = editedReminder.selectedLocationStr
+    val selectedPOI = editedReminder.selectedPOI
+    val reminderLatitude = editedReminder.latitude
+    val reminderLongitude = editedReminder.longitude
+    val reminderRadiusInMeters = editedReminder.radiusInMeters
 
-    private val reminderDataItem
-        get() = ReminderDataItem(
-            reminderTitle.value,
-            reminderDescription.value,
-            reminderSelectedLocationStr.value,
-            reminderLatitude.value,
-            reminderLongitude.value,
-            reminderRadiusInMeters.value,
-            reminderGeofenceId.value,
-            reminderId
-        )
+    private fun EditedReminder.toDTO() =
+        ReminderDataItem(
+            title.value,
+            description.value,
+            selectedLocationStr.value,
+            latitude.value,
+            longitude.value,
+            radiusInMeters.value,
+            geofenceId.value,
+            id
+        ).toDTO()
 
     private val geofencingClient = getGeofencingClient(app.applicationContext)
     private val geofencePendingIntent: PendingIntent by lazy {
@@ -69,32 +67,23 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
         )
     }
 
-    private var initialReminderLatitude: Double? = null
-    private var initialReminderLongitude: Double? = null
-    private var initialRadiusInMeters: Int? = null
-    private val isLocationChanged
-        get() = !(reminderLatitude.value == initialReminderLatitude &&
-                reminderLongitude.value == initialReminderLongitude &&
-                reminderRadiusInMeters.value == initialRadiusInMeters)
-
-    private var isReminderInitialized = false
-
     fun setReminderIfNotInitialized(reminderDataItem: ReminderDataItem) {
-        if (!isReminderInitialized)
-            reminderDataItem.run {
-                reminderTitle.value = title
-                reminderDescription.value = description
-                reminderSelectedLocationStr.value = location
-                reminderLatitude.value = latitude
-                reminderLongitude.value = longitude
-                reminderRadiusInMeters.value = radiusInMeters
-                reminderGeofenceId.value = geofenceId
-                initialReminderLatitude = latitude
-                initialReminderLongitude = longitude
-                initialRadiusInMeters = radiusInMeters
-                isReminderInitialized = true
-                reminderId = id
+        editedReminder.apply {
+            if (!isInitialized) {
+                title.value = reminderDataItem.title
+                description.value = reminderDataItem.description
+                selectedLocationStr.value = reminderDataItem.location
+                latitude.value = reminderDataItem.latitude
+                longitude.value = reminderDataItem.longitude
+                radiusInMeters.value = reminderDataItem.radiusInMeters
+                geofenceId.value = reminderDataItem.geofenceId
+                initialLatitude = reminderDataItem.latitude
+                initialLongitude = reminderDataItem.longitude
+                initialRadiusInMeters = reminderDataItem.radiusInMeters
+                isInitialized = true
+                id = reminderDataItem.id
             }
+        }
     }
 
     private val _locationState = MutableLiveData(LocationState.CHECK_SETTINGS)
@@ -109,28 +98,16 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
      * Clear the live data objects to start fresh next time the view model gets called
      */
     fun onClear() {
-        reminderTitle.value = null
-        reminderDescription.value = null
-        reminderSelectedLocationStr.value = null
-        selectedPOI.value = null
-        reminderLatitude.value = null
-        reminderLongitude.value = null
-        reminderRadiusInMeters.value = 100
-        reminderGeofenceId.value = null
-        reminderId = 0
-        initialReminderLatitude = null
-        initialReminderLongitude = null
-        initialRadiusInMeters = null
-        isReminderInitialized = false
+        editedReminder.clear()
     }
 
     fun deleteReminder(view: View) {
         viewModelScope.launch {
-            reminderGeofenceId.value?.let { geofenceId ->
+            editedReminder.geofenceId.value?.let { geofenceId ->
                 getGeofencingClient(view.context)
                     .removeGeofences(listOf(geofenceId))
             }
-            dataSource.deleteReminder(reminderDataItem.toDTO())
+            dataSource.deleteReminder(editedReminder.toDTO())
             navigationCommand.value = NavigationCommand.Back
         }
     }
@@ -138,10 +115,10 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     @SuppressLint("MissingPermission")
     fun saveReminder(@Suppress("UNUSED_PARAMETER") view: View) {
         if (validateEnteredData()) {
-            if (isLocationChanged) {
-                reminderGeofenceId.value?.let { requestId ->
+            if (editedReminder.isLocationChanged) {
+                editedReminder.geofenceId.value?.let { requestId ->
                     val logTag = this::class.java.name
-                    reminderGeofenceId.value = null
+                    editedReminder.geofenceId.value = null
                     geofencingClient.removeGeofences(listOf(requestId))
                         .addOnSuccessListener {
                             Log.d(logTag, "Old geofence removed")
@@ -153,12 +130,12 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
                 }
             }
 
-            if (reminderGeofenceId.value == null) {
+            if (editedReminder.geofenceId.value == null) {
                 val geofencingRequest = getGeofencingRequest(
                     // already checked by _viewModel.validateEnteredData())
-                    reminderLatitude.value!!,
-                    reminderLongitude.value!!,
-                    reminderRadiusInMeters.value!!
+                    editedReminder.latitude.value!!,
+                    editedReminder.longitude.value!!,
+                    editedReminder.radiusInMeters.value!!
                 )
                 geofencingClient.addGeofences(
                     geofencingRequest,
@@ -166,7 +143,7 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
                 ).apply {
                     addOnSuccessListener {
                         showSnackBar.value = "Geofence added"
-                        reminderGeofenceId.value =
+                        editedReminder.geofenceId.value =
                             geofencingRequest.geofences.first().requestId
                         validateAndSaveReminder()
                     }
@@ -224,10 +201,12 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     private fun saveOrUpdateReminder() {
         showLoading.value = true
         viewModelScope.launch {
-            if (reminderId == 0) {
-                dataSource.saveReminder(reminderDataItem.toDTO())
-            } else {
-                dataSource.updateReminder(reminderDataItem.toDTO())
+            editedReminder.toDTO().let { reminderDTO ->
+                if (reminderDTO.id == 0) {
+                    dataSource.saveReminder(reminderDTO)
+                } else {
+                    dataSource.updateReminder(reminderDTO)
+                }
             }
             showLoading.value = false
             showToast.value = app.getString(R.string.reminder_saved)
@@ -238,19 +217,21 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     /**
      * Validate the entered data and show error to the user if there's any invalid data
      */
-    fun validateEnteredData(): Boolean {
-        if (reminderTitle.value.isNullOrEmpty()) {
-            showSnackBarInt.value = R.string.err_enter_title
-            return false
-        }
+    private fun validateEnteredData(): Boolean {
+        editedReminder.run {
+            if (title.value.isNullOrEmpty()) {
+                showSnackBarInt.value = R.string.err_enter_title
+                return false
+            }
 
-        if (reminderSelectedLocationStr.value.isNullOrEmpty()
-            || reminderLatitude.value == null
-            || reminderLongitude.value == null
-        ) {
-            showSnackBarInt.value = R.string.err_select_location
-            return false
+            if (selectedLocationStr.value.isNullOrEmpty()
+                || latitude.value == null
+                || longitude.value == null
+            ) {
+                showSnackBarInt.value = R.string.err_select_location
+                return false
+            }
+            return true
         }
-        return true
     }
 }
