@@ -101,6 +101,13 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
         editedReminder.clear()
     }
 
+    fun onSelectLocationClicked() {
+//        Navigate to another fragment to get the user location
+        navigationCommand.value = NavigationCommand.To(
+            EditReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment()
+        )
+    }
+
     fun deleteReminder(view: View) {
         viewModelScope.launch {
             editedReminder.geofenceId.value?.let { geofenceId ->

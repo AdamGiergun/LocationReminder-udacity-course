@@ -51,6 +51,7 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="center_vertical"
+            android:onClick="@{() -> viewModel.onSelectLocationClicked()}"
             android:text="@string/reminder_location"
             android:textColor="@color/black"
             app:drawableLeftCompat="@drawable/ic_location"

@@ -9,7 +9,6 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.fragment.navArgs
 import com.udacity.project4.base.BaseFragment
-import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentEditReminderBinding
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
@@ -17,16 +16,16 @@ import org.koin.android.ext.android.inject
 class EditReminderFragment : BaseFragment() {
     //Get the view model this time as a single to be shared with the another fragment
     override val _viewModel: EditReminderViewModel by inject()
-    private lateinit var binding: FragmentEditReminderBinding
-
     private val resolveApiException = registerForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult()
     ) {}
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentEditReminderBinding.inflate(inflater)
+    ): View = FragmentEditReminderBinding.inflate(inflater).let { binding ->
+
+        binding.lifecycleOwner = viewLifecycleOwner
+
         val args: EditReminderFragmentArgs by navArgs()
         args.reminder?.let {
             _viewModel.setReminderIfNotInitialized(it)
@@ -53,18 +52,7 @@ class EditReminderFragment : BaseFragment() {
             }
         }
 
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.lifecycleOwner = viewLifecycleOwner
-        binding.selectLocation.setOnClickListener {
-            //            Navigate to another fragment to get the user location
-            _viewModel.navigationCommand.value = NavigationCommand.To(
-                EditReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment()
-            )
-        }
+        binding.root
     }
 
     override fun onDestroy() {
