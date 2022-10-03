@@ -26,6 +26,10 @@ abstract class BaseFragment : Fragment() {
             Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
         }
 
+        _viewModel.showToastInt.observe(this) {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+        }
+
         _viewModel.showSnackBar.observe(this) {
             Snackbar.make(requireView(), it, Snackbar.LENGTH_LONG).run {
                 snackbar = this
