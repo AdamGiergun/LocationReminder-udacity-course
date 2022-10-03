@@ -1,11 +1,15 @@
 package com.udacity.project4.utils
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 import com.udacity.project4.R
+import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import java.util.*
 
 const val ACTION_GEOFENCE_EVENT = "com.udacity.project4.action.ACTION_GEOFENCE_EVENT"
@@ -49,3 +53,20 @@ fun getGeofencingRequest(latitude: Double, longitude: Double, radiusInMeters: In
 
 fun getGeofencingClient(context: Context) =
     LocationServices.getGeofencingClient(context)
+
+fun getGeofencePendingIntent(context: Context): PendingIntent {
+    val intent = Intent(context, GeofenceBroadcastReceiver::class.java).apply {
+        action = ACTION_GEOFENCE_EVENT
+    }
+
+    return PendingIntent.getBroadcast(
+        context.applicationContext,
+        0,
+        intent,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+    )
+}

@@ -1,10 +1,7 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
-import android.os.Build
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,10 +14,9 @@ import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.utils.ACTION_GEOFENCE_EVENT
 import com.udacity.project4.utils.LocationState
+import com.udacity.project4.utils.getGeofencePendingIntent
 import com.udacity.project4.utils.getGeofencingClient
 import com.udacity.project4.utils.getGeofencingRequest
 import kotlinx.coroutines.launch
@@ -50,23 +46,6 @@ class EditReminderViewModel(private val dataSource: ReminderDataSource) :
         geofenceId.value,
         id
     )
-
-    private fun getGeofencePendingIntent(context: Context): PendingIntent {
-        val intent = Intent(context, GeofenceBroadcastReceiver::class.java).apply {
-            action = ACTION_GEOFENCE_EVENT
-        }
-
-        return PendingIntent.getBroadcast(
-            context.applicationContext,
-            0,
-            intent,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            } else {
-                PendingIntent.FLAG_UPDATE_CURRENT
-            }
-        )
-    }
 
     fun setReminderIfNotInitialized(reminderDataItem: ReminderDataItem) {
         editedReminder.apply {
