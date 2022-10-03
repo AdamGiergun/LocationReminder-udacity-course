@@ -1,7 +1,6 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.annotation.SuppressLint
-import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -26,8 +25,8 @@ import com.udacity.project4.utils.getGeofencingClient
 import com.udacity.project4.utils.getGeofencingRequest
 import kotlinx.coroutines.launch
 
-class EditReminderViewModel(val app: Application, private val dataSource: ReminderDataSource) :
-    BaseViewModel(app) {
+class EditReminderViewModel(private val dataSource: ReminderDataSource) :
+    BaseViewModel() {
 
     val resolvableApiException = MutableLiveData<ResolvableApiException?>()
 
@@ -52,14 +51,13 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
         id
     )
 
-    private val geofencingClient = getGeofencingClient(app.applicationContext)
-    private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(app.applicationContext, GeofenceBroadcastReceiver::class.java).apply {
+    private fun getGeofencePendingIntent(context: Context): PendingIntent {
+        val intent = Intent(context, GeofenceBroadcastReceiver::class.java).apply {
             action = ACTION_GEOFENCE_EVENT
         }
 
-        PendingIntent.getBroadcast(
-            app.applicationContext,
+        return PendingIntent.getBroadcast(
+            context.applicationContext,
             0,
             intent,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -114,7 +112,7 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     fun deleteReminder(context: Context) {
         viewModelScope.launch {
             editedReminder.geofenceId.value?.let { geofenceId ->
-                getGeofencingClient(context)
+                getGeofencingClient(context.applicationContext)
                     .removeGeofences(listOf(geofenceId))
             }
             dataSource.deleteReminder(editedReminder.toDTO())
@@ -123,7 +121,9 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     }
 
     @SuppressLint("MissingPermission")
-    fun saveReminder() {
+    fun saveReminder(context: Context) {
+        val geofencingClient = getGeofencingClient(context)
+
         if (validateEnteredData()) {
             if (editedReminder.isLocationChanged) {
                 editedReminder.geofenceId.value?.let { requestId ->
@@ -149,7 +149,7 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
                 )
                 geofencingClient.addGeofences(
                     geofencingRequest,
-                    geofencePendingIntent
+                    getGeofencePendingIntent(context)
                 ).apply {
                     addOnSuccessListener {
                         showSnackBar.value = "Geofence added"
@@ -219,7 +219,7 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
                 }
             }
             showLoading.value = false
-            showToast.value = app.getString(R.string.reminder_saved)
+            showToastInt.value = R.string.reminder_saved
             navigationCommand.value = NavigationCommand.Back
         }
     }

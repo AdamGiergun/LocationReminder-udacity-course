@@ -111,7 +111,7 @@
             android:layout_margin="@dimen/margin_normal"
             android:contentDescription="@string/add_location_reminder_button"
             android:fadeVisible="@{!viewModel.showLoading.booleanValue()}"
-            android:onClick="@{() -> viewModel.saveReminder()}"
+            android:onClick="@{(view) -> viewModel.saveReminder(view.context)}"
             android:src="@drawable/ic_save"
             app:fabSize="normal"
             app:layout_anchorGravity="bottom|right|end"
