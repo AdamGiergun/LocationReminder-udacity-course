@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.reminderslist
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.udacity.project4.base.BaseViewModel
+import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
@@ -15,6 +16,13 @@ class RemindersListViewModel(
 ) : BaseViewModel() {
     // list that holds the reminder data to be displayed on the UI
     val remindersList = MutableLiveData<List<ReminderDataItem>>()
+
+    val remindersListAdapter
+        get() = RemindersListAdapter {
+            navigationCommand.value = NavigationCommand.To(
+                ReminderListFragmentDirections.toEditReminder(it)
+            )
+        }
 
     /**
      * Get all the reminders from the DataSource and add them to the remindersList to be shown on the UI,
@@ -37,8 +45,7 @@ class RemindersListViewModel(
                         remindersList.value = dataList
                     }
                 }
-                is Result.Error ->
-                    showSnackBar.value = result.message
+                is Result.Error -> showSnackBar.value = result.message
             }
 
             //check if no data has to be shown
@@ -46,10 +53,18 @@ class RemindersListViewModel(
         }
     }
 
+
     /**
      * Inform the user that there's not any data if the remindersList is empty
      */
     private fun invalidateShowNoData() {
         showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
+    }
+
+    fun navigateToAddReminder() {
+        //use the navigationCommand live data to navigate between the fragments
+        navigationCommand.value = NavigationCommand.To(
+            ReminderListFragmentDirections.toEditReminder(null)
+        )
     }
 }

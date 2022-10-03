@@ -7,6 +7,7 @@ import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.udacity.project4.base.BaseRecyclerViewAdapter
+import com.udacity.project4.locationreminders.reminderslist.RemindersListAdapter
 
 
 object BindingAdapters {
@@ -51,10 +52,14 @@ object BindingAdapters {
     @JvmStatic
     fun TextView.setTitleColor(geofenceId: String?) {
         setTextColor(
-            if (geofenceId == null)
-                ContextCompat.getColor(context, android.R.color.darker_gray)
-            else
-                ContextCompat.getColor(context, android.R.color.black)
+            if (geofenceId == null) ContextCompat.getColor(context, android.R.color.darker_gray)
+            else ContextCompat.getColor(context, android.R.color.black)
         )
+    }
+
+    @BindingAdapter("android:setupAdapter")
+    @JvmStatic
+    fun RecyclerView.setupAdapter(adapter: RemindersListAdapter) {
+        setup(adapter)
     }
 }
