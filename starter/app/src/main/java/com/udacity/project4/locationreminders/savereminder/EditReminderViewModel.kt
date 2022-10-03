@@ -17,6 +17,7 @@ import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
+import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.*
@@ -37,17 +38,16 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     val reminderLongitude = editedReminder.longitude
     val reminderRadiusInMeters = editedReminder.radiusInMeters
 
-    private fun EditedReminder.toDTO() =
-        ReminderDataItem(
-            title.value,
-            description.value,
-            selectedLocationStr.value,
-            latitude.value,
-            longitude.value,
-            radiusInMeters.value,
-            geofenceId.value,
-            id
-        ).toDTO()
+    private fun EditedReminder.toDTO() = ReminderDTO(
+        title.value,
+        description.value,
+        selectedLocationStr.value,
+        latitude.value,
+        longitude.value,
+        radiusInMeters.value,
+        geofenceId.value,
+        id
+    )
 
     private val geofencingClient = getGeofencingClient(app.applicationContext)
     private val geofencePendingIntent: PendingIntent by lazy {
