@@ -3,10 +3,10 @@ package com.udacity.project4.locationreminders.savereminder
 import android.annotation.SuppressLint
 import android.app.Application
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -20,7 +20,10 @@ import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.utils.*
+import com.udacity.project4.utils.ACTION_GEOFENCE_EVENT
+import com.udacity.project4.utils.LocationState
+import com.udacity.project4.utils.getGeofencingClient
+import com.udacity.project4.utils.getGeofencingRequest
 import kotlinx.coroutines.launch
 
 class EditReminderViewModel(val app: Application, private val dataSource: ReminderDataSource) :
@@ -108,10 +111,10 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
         )
     }
 
-    fun deleteReminder(view: View) {
+    fun deleteReminder(context: Context) {
         viewModelScope.launch {
             editedReminder.geofenceId.value?.let { geofenceId ->
-                getGeofencingClient(view.context)
+                getGeofencingClient(context)
                     .removeGeofences(listOf(geofenceId))
             }
             dataSource.deleteReminder(editedReminder.toDTO())
@@ -120,7 +123,7 @@ class EditReminderViewModel(val app: Application, private val dataSource: Remind
     }
 
     @SuppressLint("MissingPermission")
-    fun saveReminder(@Suppress("UNUSED_PARAMETER") view: View) {
+    fun saveReminder() {
         if (validateEnteredData()) {
             if (editedReminder.isLocationChanged) {
                 editedReminder.geofenceId.value?.let { requestId ->
