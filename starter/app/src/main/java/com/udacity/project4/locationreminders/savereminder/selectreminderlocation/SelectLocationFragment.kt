@@ -3,7 +3,6 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Intent
 import android.content.IntentSender
 import android.content.res.Resources
@@ -44,10 +43,12 @@ class SelectLocationFragment : BaseFragment() {
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: EditReminderViewModel by inject()
-    private lateinit var binding: FragmentSelectLocationBinding
+
     private var googleMap: GoogleMap? = null
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val fusedLocationClient: FusedLocationProviderClient by lazy {
+        LocationServices.getFusedLocationProviderClient(requireActivity())
+    }
 
     private val permissionsRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -108,7 +109,7 @@ class SelectLocationFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        binding = FragmentSelectLocationBinding.inflate(inflater)
+        val binding = FragmentSelectLocationBinding.inflate(inflater)
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -156,13 +157,14 @@ class SelectLocationFragment : BaseFragment() {
                             try {
                                 locationSettingsResponse.locationSettingsStates?.let { states ->
                                     if (states.isGpsPresent) {
+                                        val context = requireContext()
                                         val fineLoc =
-                                            isFineLocationPermissionGranted(requireContext())
+                                            isFineLocationPermissionGranted(context)
                                         val bgrLoc =
-                                            isBackgroundLocationPermissionGranted(requireContext())
+                                            isBackgroundLocationPermissionGranted(context)
 //                                        val gps = states.isGpsUsable
                                         val notifications =
-                                            isPostNotificationsPermissionGranted(requireContext())
+                                            isPostNotificationsPermissionGranted(context)
 
                                         if (!fineLoc)
                                             _viewModel.setLocationState(LocationState.FINE_LOCATION_NOT_PERMITTED)
@@ -273,8 +275,6 @@ class SelectLocationFragment : BaseFragment() {
             }
         }
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-
         lifecycleScope.launchWhenCreated {
             val mapFragment: SupportMapFragment? =
                 childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
@@ -334,37 +334,37 @@ class SelectLocationFragment : BaseFragment() {
         private val latLng: LatLng? = null,
         private val marker: Marker? = null
     ) : DialogFragment() {
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            return requireActivity().let {
-                AlertDialog.Builder(it).run {
-                    setMessage(
-                        if (selectedPOI == null)
-                            getString(R.string.save_this_location, "")
-                        else
-                            getString(R.string.save_this_location, "\n(${selectedPOI.name})")
-                    )
-                    setPositiveButton(android.R.string.ok) { _, _ ->
-                        if (selectedPOI == null) {
-                            latLng?.let {
-                                viewModel.reminderLatitude.value = latLng.latitude
-                                viewModel.reminderLongitude.value = latLng.longitude
-                                viewModel.reminderSelectedLocationStr.value =
-                                    getString(R.string.undisclosed_location)
-                            }
-                        } else {
-                            viewModel.selectedPOI.value = selectedPOI
-                            viewModel.reminderLatitude.value = selectedPOI.latLng.latitude
-                            viewModel.reminderLongitude.value = selectedPOI.latLng.longitude
-                            viewModel.reminderSelectedLocationStr.value = selectedPOI.name
+        override fun onCreateDialog(savedInstanceState: Bundle?): AlertDialog =
+            AlertDialog.Builder(requireActivity()).run {
+                setMessage(
+                    if (selectedPOI == null)
+                        getString(R.string.save_this_location, "")
+                    else
+                        getString(R.string.save_this_location, "\n(${selectedPOI.name})")
+                )
+
+                setPositiveButton(android.R.string.ok) { _, _ ->
+                    if (selectedPOI == null) {
+                        latLng?.let {
+                            viewModel.reminderLatitude.value = latLng.latitude
+                            viewModel.reminderLongitude.value = latLng.longitude
+                            viewModel.reminderSelectedLocationStr.value =
+                                getString(R.string.undisclosed_location)
                         }
-                        viewModel.navigationCommand.value = NavigationCommand.Back
+                    } else {
+                        viewModel.selectedPOI.value = selectedPOI
+                        viewModel.reminderLatitude.value = selectedPOI.latLng.latitude
+                        viewModel.reminderLongitude.value = selectedPOI.latLng.longitude
+                        viewModel.reminderSelectedLocationStr.value = selectedPOI.name
                     }
-                    setNegativeButton(android.R.string.cancel) { _, _ ->
-                        marker?.remove()
-                    }
-                    create()
+                    viewModel.navigationCommand.value = NavigationCommand.Back
                 }
+
+                setNegativeButton(android.R.string.cancel) { _, _ ->
+                    marker?.remove()
+                }
+
+                create()
             }
-        }
     }
 }
