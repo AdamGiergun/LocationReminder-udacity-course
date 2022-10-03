@@ -57,22 +57,24 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
 
     override suspend fun doWork(): Result {
         inputData.getString(GEOFENCE_ID)?.let { geofenceId ->
-            val geofencingClient = getGeofencingClient(applicationContext)
-            geofencingClient.removeGeofences(listOf(geofenceId))
-                .addOnSuccessListener {
-                    InactivateReminderWorker.buildWorkRequest(geofenceId).let { workRequest ->
-                        WorkManager
-                            .getInstance(applicationContext)
-                            .enqueueUniqueWork(
-                                "LocationReminderRemove_$geofenceId",
-                                ExistingWorkPolicy.KEEP,
-                                workRequest
-                            )
+            getGeofencingClient(applicationContext)
+                .removeGeofences(listOf(geofenceId)).apply {
+                    addOnSuccessListener {
+                        InactivateReminderWorker.buildWorkRequest(geofenceId).let { workRequest ->
+                            WorkManager
+                                .getInstance(applicationContext)
+                                .enqueueUniqueWork(
+                                    "LocationReminderRemove_$geofenceId",
+                                    ExistingWorkPolicy.KEEP,
+                                    workRequest
+                                )
+                        }
+                        Log.d(TAG, "Geofence removed")
                     }
-                    Log.d(TAG, "Geofence removed")
-                }
-                .addOnFailureListener { exception ->
-                    Log.d(TAG, "Geofence not removed ${exception.localizedMessage}")
+
+                    addOnFailureListener { exception ->
+                        Log.d(TAG, "Geofence not removed ${exception.localizedMessage}")
+                    }
                 }
             sendNotification(geofenceId)
         }
