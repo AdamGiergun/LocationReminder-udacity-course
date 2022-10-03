@@ -4,9 +4,11 @@ import android.Manifest
 import android.app.Application
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -162,10 +164,29 @@ class RemindersActivityTest :
     }
 
     @Test
-    fun createOneReminder_deleteReminder() = runTest {
+    fun createTwoReminder_deleteOneReminder() = runTest {
 
         ActivityScenario.launch(RemindersActivity::class.java).run {
             dataBindingIdlingResource.monitorActivity(this)
+
+            onView(withId(R.id.addReminderFAB)).perform(click())
+            onView(withId(R.id.reminder_title))
+                .perform(replaceText("TITLE1"))
+            onView(withId(R.id.reminder_description))
+                .perform(replaceText("DESCRIPTION1"))
+            onView(withId(R.id.select_location)).perform(click())
+            onView(withId(R.id.map)).perform(longClick())
+            onView(withText("OK")).perform(click())
+            onView(withId(R.id.radius_in_meters))
+                .perform(replaceText("50"))
+            onView(withId(R.id.saveReminder)).perform(click())
+
+            onView(withText("TITLE1")).perform(click())
+            onView(withId(R.id.reminder_title))
+                .check(matches(withText("TITLE1")))
+            onView(withId(R.id.reminder_description))
+                .check(matches(withText("DESCRIPTION1")))
+            Espresso.pressBack()
 
             onView(withId(R.id.addReminderFAB)).perform(click())
             onView(withId(R.id.reminder_title))
@@ -176,16 +197,21 @@ class RemindersActivityTest :
             onView(withId(R.id.map)).perform(longClick())
             onView(withText("OK")).perform(click())
             onView(withId(R.id.radius_in_meters))
-                .perform(replaceText("50"))
-
+                .perform(replaceText("80"))
             onView(withId(R.id.saveReminder)).perform(click())
-            //Thread.sleep(2100)
+
+            onView(withText("TITLE1")).perform(click())
+            onView(withId(R.id.reminder_title))
+                .check(matches(withText("TITLE1")))
+            onView(withId(R.id.deleteReminder)).perform(click())
+
+            onView(withText("TITLE1")).check(doesNotExist())
+
             onView(withText("TITLE2")).perform(click())
             onView(withId(R.id.reminder_title))
                 .check(matches(withText("TITLE2")))
             onView(withId(R.id.reminder_description))
                 .check(matches(withText("DESCRIPTION2")))
-//            Thread.sleep(3000)
 
 //            onView(withId(R.id.menu_delete)).perform(click())
 ////            try {
