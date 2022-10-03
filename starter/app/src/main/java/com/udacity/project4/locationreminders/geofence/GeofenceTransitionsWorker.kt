@@ -8,7 +8,7 @@ import com.google.android.gms.location.GeofencingEvent
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import com.udacity.project4.utils.errorMessage
+import com.udacity.project4.utils.getGeofenceErrorMessage
 import com.udacity.project4.utils.getGeofencingClient
 import com.udacity.project4.utils.sendNotification
 import com.udacity.project4.utils.toDataItem
@@ -26,7 +26,7 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
             geofencingEvent: GeofencingEvent
         ): OneTimeWorkRequest? {
             if (geofencingEvent.hasError()) {
-                val errorMessage = errorMessage(context, geofencingEvent.errorCode)
+                val errorMessage = context.getGeofenceErrorMessage(geofencingEvent.errorCode)
                 Log.e(TAG, errorMessage)
             }
 

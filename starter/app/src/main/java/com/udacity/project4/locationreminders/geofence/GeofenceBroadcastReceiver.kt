@@ -8,7 +8,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
 import com.google.android.gms.location.GeofencingEvent
 import com.udacity.project4.utils.ACTION_GEOFENCE_EVENT
-import com.udacity.project4.utils.errorMessage
+import com.udacity.project4.utils.getGeofenceErrorMessage
 import java.util.*
 
 /**
@@ -26,7 +26,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         if (intent.action == ACTION_GEOFENCE_EVENT) {
             GeofencingEvent.fromIntent(intent).let { geofencingEvent ->
                 if (geofencingEvent == null) {
-                    val errorMessage = errorMessage(context, 0)
+                    val errorMessage = context.getGeofenceErrorMessage(-1)
                     Log.e(TAG, errorMessage)
                 } else {
                     GeofenceTransitionsWorker.buildWorkRequest(context, geofencingEvent)
