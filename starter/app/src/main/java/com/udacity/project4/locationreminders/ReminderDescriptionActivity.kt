@@ -17,11 +17,10 @@ class ReminderDescriptionActivity : AppCompatActivity() {
         private const val EXTRA_ReminderDataItem = "EXTRA_ReminderDataItem"
 
         //        receive the reminder object after the user clicks on the notification
-        fun newIntent(context: Context, reminderDataItem: ReminderDataItem): Intent {
-            val intent = Intent(context, ReminderDescriptionActivity::class.java)
-            intent.putExtra(EXTRA_ReminderDataItem, reminderDataItem)
-            return intent
-        }
+        fun newIntent(context: Context, reminderDataItem: ReminderDataItem) =
+            Intent(context, ReminderDescriptionActivity::class.java).apply {
+                putExtra(EXTRA_ReminderDataItem, reminderDataItem)
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
