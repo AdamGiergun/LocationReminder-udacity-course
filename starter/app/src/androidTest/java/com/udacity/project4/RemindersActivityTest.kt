@@ -71,13 +71,11 @@ class RemindersActivityTest :
         val myModule = module {
             viewModel {
                 RemindersListViewModel(
-                    appContext,
                     get() as ReminderDataSource
                 )
             }
             single {
                 EditReminderViewModel(
-                    appContext,
                     get() as ReminderDataSource
                 )
             }
@@ -212,18 +210,6 @@ class RemindersActivityTest :
                 .check(matches(withText("TITLE2")))
             onView(withId(R.id.reminder_description))
                 .check(matches(withText("DESCRIPTION2")))
-
-//            onView(withId(R.id.menu_delete)).perform(click())
-////            try {
-////
-////            } catch (e: NoMatchingViewException) {
-////                openActionBarOverflowOrOptionsMenu(getApplicationContext())
-////                onView(withText(R.string.menu_delete_task)).perform(click())
-////            }
-//
-//            onView(withId(R.id.menu_filter)).perform(click())
-//            onView(withText(R.string.nav_all)).perform(click())
-//            onView(withText("TITLE2")).check(doesNotExist())
 
             close()
         }

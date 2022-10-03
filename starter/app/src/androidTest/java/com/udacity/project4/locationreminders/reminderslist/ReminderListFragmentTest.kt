@@ -6,7 +6,6 @@ import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.PerformException
@@ -61,7 +60,6 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
         val viewModelModule = module {
             viewModel {
                 RemindersListViewModel(
-                    ApplicationProvider.getApplicationContext(),
                     get() as ReminderDataSource
                 )
             }

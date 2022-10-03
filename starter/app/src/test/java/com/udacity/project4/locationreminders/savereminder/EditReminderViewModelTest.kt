@@ -1,10 +1,8 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.udacity.project4.MyApp
 import com.udacity.project4.R
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.getOrAwaitValue
@@ -33,7 +31,6 @@ class EditReminderViewModelTest : KoinTest {
     private val viewModelModule = module {
         single {
             EditReminderViewModel(
-                get(),
                 get() as ReminderDataSource
             )
         }
@@ -85,9 +82,8 @@ class EditReminderViewModelTest : KoinTest {
         val showLoading = editReminderViewModel.showLoading.getOrAwaitValue()
         assertThat(showLoading).isFalse()
 
-        val appContext = getApplicationContext<MyApp>().applicationContext
-        val showToast = editReminderViewModel.showToast.getOrAwaitValue()
-        assertThat(showToast).isEqualTo(appContext.getString(R.string.reminder_saved))
+        val showToastInt = editReminderViewModel.showToastInt.getOrAwaitValue()
+        assertThat(showToastInt).isEqualTo(R.string.reminder_saved)
 
         val navigationCommand = editReminderViewModel.navigationCommand.getOrAwaitValue()
         assertThat(navigationCommand).isEqualTo(NavigationCommand.Back)

@@ -30,7 +30,6 @@ class RemindersListViewModelTest : KoinTest {
     private val viewModelModule = module {
         single {
             RemindersListViewModel(
-                get(),
                 get() as ReminderDataSource
             )
         }
