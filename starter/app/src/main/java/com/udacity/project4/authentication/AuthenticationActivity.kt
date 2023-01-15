@@ -27,6 +27,7 @@ class AuthenticationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         ActivityAuthenticationBinding.inflate(layoutInflater).let { binding ->
             setContentView(binding.root)
 
