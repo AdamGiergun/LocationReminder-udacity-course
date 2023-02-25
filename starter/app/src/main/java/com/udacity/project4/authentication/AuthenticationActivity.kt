@@ -2,13 +2,14 @@ package com.udacity.project4.authentication
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
 import com.udacity.project4.locationreminders.RemindersActivity
+import org.koin.androidx.viewmodel.ext.android.getViewModel
+import org.koin.java.KoinJavaComponent.inject
 
 /**
  * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the
@@ -17,25 +18,29 @@ import com.udacity.project4.locationreminders.RemindersActivity
 
 class AuthenticationActivity : AppCompatActivity() {
 
-    private val viewModel: AuthenticationViewModel by viewModels()
+    private val firebaseAuthUIActivityResultContract : FirebaseAuthUIActivityResultContract by inject(FirebaseAuthUIActivityResultContract::class.java)
+
+    private lateinit var authViewModel: AuthenticationViewModel
 
     private val signInLauncher = registerForActivityResult(
-        FirebaseAuthUIActivityResultContract()
+        firebaseAuthUIActivityResultContract
     ) { result ->
-        viewModel.onSignInResult(result)
+        authViewModel.onSignInResult(result)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        authViewModel = getViewModel()
+
         ActivityAuthenticationBinding.inflate(layoutInflater).let { binding ->
             setContentView(binding.root)
 
             binding.loginButton.setOnClickListener {
-                signInLauncher.launch(viewModel.signInIntent)
+                signInLauncher.launch(authViewModel.signInIntent)
             }
 
-            viewModel.authenticationState.observe(this) { authenticationState ->
+            authViewModel.authenticationState.observe(this) { authenticationState ->
                 when (authenticationState) {
                     AuthenticationViewModel.AuthenticationState.AUTHENTICATED -> {
                         startRemindersActivity()
@@ -51,7 +56,7 @@ class AuthenticationActivity : AppCompatActivity() {
                 }
             }
 
-            viewModel.showSnackBarInt.observe(this) {
+            authViewModel.showSnackBarInt.observe(this) {
                 Snackbar.make(
                     binding.root,
                     it,
