@@ -78,20 +78,29 @@ class AuthenticationActivityTest: AutoCloseKoinTest() {
     }
 
     @Test
-    fun whenUnauthenticatedUserCanLaunchSignIn() {
+    fun unauthenticatedUserCanLaunchSignIn() {
         ActivityScenario.launch(AuthenticationActivity::class.java).run {
+            // GIVEN - user is unauthenticated
             mockAuthenticationViewModelImpl.authenticationState.postValue(AuthenticationViewModel.AuthenticationState.UNAUTHENTICATED)
             dataBindingIdlingResource.monitorActivity(this)
+
+            // WHEN - users clicks login button
             onView(withId(R.id.login_button)).perform(click())
+            
+            // THEN - sign in is launched from vieModel
             assert(mockAuthenticationViewModelImpl.signInLaunched)
         }
     }
 
     @Test
-    fun whenUserAuthenticatedAndDatabaseEmptyUserSeesEmptyRemindersList() {
+    fun authenticatedUserSeesEmptyRemindersList() {
         ActivityScenario.launch(AuthenticationActivity::class.java).run {
+            // GIVEN - user is authenticated
             mockAuthenticationViewModelImpl.authenticationState.postValue(AuthenticationViewModel.AuthenticationState.AUTHENTICATED)
             dataBindingIdlingResource.monitorActivity(this)
+
+            // WHEN - there are no reminders in db
+            // THEN - user sees reminders activity with empty list
             onView(withId(R.id.noDataTextView)).check(matches(withText("No Data")))
         }
     }

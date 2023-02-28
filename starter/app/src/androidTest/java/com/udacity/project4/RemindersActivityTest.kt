@@ -124,7 +124,7 @@ class RemindersActivityTest :
 
     @Test
     fun editReminder(): Unit = runTest {
-
+        // GIVEN - reminder inserted
         val reminder = ReminderDataItem(
             "title1",
             "description1",
@@ -151,8 +151,10 @@ class RemindersActivityTest :
         ActivityScenario.launch(RemindersActivity::class.java).run {
             dataBindingIdlingResource.monitorActivity(this)
 
+            // WHEN - user clicks on reminder
             onView(withText("title1")).perform(click())
 
+            // THEN - reminder is opened
             onView(withId(R.id.reminder_title))
                 .check(matches(withText("title1")))
             onView(withId(R.id.reminder_description))
@@ -165,11 +167,12 @@ class RemindersActivityTest :
     }
 
     @Test
-    fun createTwoReminder_deleteOneReminder() = runTest {
-
+    fun createTwoReminders_deleteOneReminder() = runTest {
+        // GIVEN - empty list
         ActivityScenario.launch(RemindersActivity::class.java).run {
             dataBindingIdlingResource.monitorActivity(this)
 
+            // WHEN - user creates and saves first reminder
             onView(withId(R.id.addReminderFAB)).perform(click())
             onView(withId(R.id.reminder_title))
                 .perform(replaceText("TITLE1"))
@@ -182,6 +185,7 @@ class RemindersActivityTest :
                 .perform(replaceText("50"))
             onView(withId(R.id.saveReminder)).perform(click())
 
+            // THEN - user sees first reminder and is able to edit it
             onView(withText("TITLE1")).perform(click())
             onView(withId(R.id.reminder_title))
                 .check(matches(withText("TITLE1")))
@@ -189,6 +193,7 @@ class RemindersActivityTest :
                 .check(matches(withText("DESCRIPTION1")))
             Espresso.pressBack()
 
+            // WHEN - user creates and saves second reminder
             onView(withId(R.id.addReminderFAB)).perform(click())
             onView(withId(R.id.reminder_title))
                 .perform(replaceText("TITLE2"))
@@ -201,13 +206,22 @@ class RemindersActivityTest :
                 .perform(replaceText("80"))
             onView(withId(R.id.saveReminder)).perform(click())
 
+            // THEN - user sees second reminder and is able to edit it
+            onView(withText("TITLE2")).perform(click())
+            onView(withId(R.id.reminder_title))
+                .check(matches(withText("TITLE2")))
+            onView(withId(R.id.reminder_description))
+                .check(matches(withText("DESCRIPTION2")))
+            Espresso.pressBack()
+
+            // WHEN - user deletes first reminder
             onView(withText("TITLE1")).perform(click())
             onView(withId(R.id.reminder_title))
                 .check(matches(withText("TITLE1")))
             onView(withId(R.id.deleteReminder)).perform(click())
 
+            // THEN - first reminder is not in list and second reminder is there
             onView(withText("TITLE1")).check(doesNotExist())
-
             onView(withText("TITLE2")).perform(click())
             onView(withId(R.id.reminder_title))
                 .check(matches(withText("TITLE2")))

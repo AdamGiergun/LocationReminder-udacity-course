@@ -68,7 +68,7 @@ class RemindersDaoTest {
 
     @Test
     fun saveMultipleRemindersAndDeleteAll() = runTest {
-        // GIVEN - Insert reminders
+        // GIVEN - Reminders are inserted
         val reminders = listOf(
             ReminderDataItem(
                 "title2",
@@ -111,7 +111,6 @@ class RemindersDaoTest {
         // WHEN - delete all reminders
         database.reminderDao().deleteAllReminders()
         loaded = database.reminderDao().getReminders()
-
         //THEN - reminders count in db is zero
         assertThat(loaded.size).isEqualTo(0)
     }

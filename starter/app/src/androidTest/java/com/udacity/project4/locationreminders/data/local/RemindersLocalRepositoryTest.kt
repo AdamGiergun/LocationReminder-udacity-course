@@ -47,7 +47,7 @@ class RemindersLocalRepositoryTest {
 
     @Test
     fun saveReminderAndGetByGeofenceId() = runTest {
-        // GIVEN - Insert a reminder
+        // GIVEN - reminder inserted
         val reminder = ReminderDataItem(
             "title1",
             "desc1",
@@ -74,7 +74,7 @@ class RemindersLocalRepositoryTest {
 
     @Test
     fun saveReminderAndRemoveGeofenceId() = runTest {
-        // GIVEN - Insert a reminder
+        // GIVEN - reminder inserted
         val geofenceId = "test_geofence_id1"
         val reminder = ReminderDataItem(
             "title1",
@@ -97,7 +97,7 @@ class RemindersLocalRepositoryTest {
 
     @Test
     fun saveMultipleRemindersAndDeleteAll() = runTest {
-        // GIVEN - Insert reminders
+        // GIVEN - multiple reminders inserted
         val reminders = listOf(
             ReminderDataItem(
                 "title2",
@@ -135,7 +135,6 @@ class RemindersLocalRepositoryTest {
         // WHEN - Get the reminders from the database
         var result =
             repository.getReminders() as com.udacity.project4.locationreminders.data.dto.Result.Success
-
         // THEN - check count
         var loaded = result.data
         assertThat(loaded.size).isEqualTo(reminders.size)
