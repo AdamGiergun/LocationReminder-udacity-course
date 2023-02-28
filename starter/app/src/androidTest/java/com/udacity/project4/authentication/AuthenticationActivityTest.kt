@@ -1,6 +1,7 @@
 package com.udacity.project4.authentication
 
 import android.app.Application
+import androidx.room.Room
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
@@ -12,12 +13,13 @@ import androidx.test.filters.LargeTest
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
+import com.udacity.project4.locationreminders.data.local.RemindersDatabase
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.EditReminderViewModel
 import com.udacity.project4.util.DataBindingIdlingResource
 import com.udacity.project4.util.monitorActivity
-import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -27,7 +29,6 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
-import org.koin.test.get
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -36,6 +37,19 @@ class AuthenticationActivityTest: AutoCloseKoinTest() {
     private val dataBindingIdlingResource = DataBindingIdlingResource()
     private val mockAuthenticationViewModelImpl = MockAuthenticationViewModelImpl()
     private lateinit var repository: ReminderDataSource
+    private lateinit var database: RemindersDatabase
+
+    @Before
+    fun initRepo() {
+        database = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            RemindersDatabase::class.java
+        ).build()
+
+        repository = RemindersLocalRepository(
+            database.reminderDao()
+        )
+    }
 
     @Before
     fun init() {
@@ -68,14 +82,10 @@ class AuthenticationActivityTest: AutoCloseKoinTest() {
         startKoin {
             modules(myModule)
         }
-        //Get our real repository
-        repository = get()
-
-        //clear the data to start fresh
-        runBlocking {
-            repository.deleteAllReminders()
-        }
     }
+
+    @After
+    fun closeDb() = database.close()
 
     @Test
     fun unauthenticatedUserCanLaunchSignIn() {
