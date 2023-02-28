@@ -9,7 +9,6 @@ import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
 import com.udacity.project4.locationreminders.RemindersActivity
 import org.koin.androidx.viewmodel.ext.android.getViewModel
-import org.koin.java.KoinJavaComponent.inject
 
 /**
  * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the
@@ -18,12 +17,10 @@ import org.koin.java.KoinJavaComponent.inject
 
 class AuthenticationActivity : AppCompatActivity() {
 
-    private val firebaseAuthUIActivityResultContract : FirebaseAuthUIActivityResultContract by inject(FirebaseAuthUIActivityResultContract::class.java)
-
     private lateinit var authViewModel: AuthenticationViewModel
 
     private val signInLauncher = registerForActivityResult(
-        firebaseAuthUIActivityResultContract
+        FirebaseAuthUIActivityResultContract()
     ) { result ->
         authViewModel.onSignInResult(result)
     }
@@ -37,7 +34,7 @@ class AuthenticationActivity : AppCompatActivity() {
             setContentView(binding.root)
 
             binding.loginButton.setOnClickListener {
-                signInLauncher.launch(authViewModel.signInIntent)
+                authViewModel.launchSignIn(signInLauncher)
             }
 
             authViewModel.authenticationState.observe(this) { authenticationState ->

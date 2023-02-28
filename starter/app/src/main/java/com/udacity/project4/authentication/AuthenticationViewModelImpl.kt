@@ -1,9 +1,14 @@
 package com.udacity.project4.authentication
 
 import android.app.Activity
+import android.content.Intent
 import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.map
-import com.firebase.ui.auth.*
+import com.firebase.ui.auth.AuthMethodPickerLayout
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.BuildConfig
+import com.firebase.ui.auth.ErrorCodes
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.udacity.project4.R
 import com.udacity.project4.utils.SingleLiveEvent
@@ -41,13 +46,17 @@ class AuthenticationViewModelImpl : AuthenticationViewModel() {
 
     // Create and launch sign-in intent. We listen to the response of this activity with the
     // SIGN_IN_RESULT_CODE code.
-    override val signInIntent
+    private val signInIntent
         get() = AuthUI.getInstance()
             .createSignInIntentBuilder()
-            .setIsSmartLockEnabled(!BuildConfig.DEBUG, true) //temporary for testing
             .setAuthMethodPickerLayout(customAuthLayout)
             .setAvailableProviders(providers)
+            .setIsSmartLockEnabled(!BuildConfig.DEBUG, true) //disables Smart Lock for testing purposes
             .build()
+
+    override fun launchSignIn(signInLauncher: ActivityResultLauncher<Intent>?) {
+        signInLauncher?.launch(signInIntent)
+    }
 
     override fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse

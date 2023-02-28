@@ -1,6 +1,7 @@
 package com.udacity.project4.authentication
 
 import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
@@ -16,7 +17,7 @@ abstract class AuthenticationViewModel: ViewModel() {
 
     abstract val authenticationState: LiveData<AuthenticationState>
 
-    abstract val signInIntent: Intent
+    abstract fun launchSignIn(signInLauncher: ActivityResultLauncher<Intent>?)
 
     abstract fun onSignInResult(result: FirebaseAuthUIAuthenticationResult)
 }
