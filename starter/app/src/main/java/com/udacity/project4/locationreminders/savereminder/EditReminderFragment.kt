@@ -47,7 +47,7 @@ class EditReminderFragment : BaseFragment() {
                 } catch (sendEx: IntentSender.SendIntentException) {
                     _viewModel.showErrorMessage.value = sendEx.localizedMessage
                 } finally {
-                    _viewModel.resolvableApiException.value = null
+                    _viewModel.setResolvableApiException(null)
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.udacity.project4.locationreminders.reminderslist
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.udacity.project4.base.BaseViewModel
@@ -15,7 +16,9 @@ class RemindersListViewModel(
     private val dataSource: ReminderDataSource
 ) : BaseViewModel() {
     // list that holds the reminder data to be displayed on the UI
-    val remindersList = MutableLiveData<List<ReminderDataItem>>()
+    private val _remindersList = MutableLiveData<List<ReminderDataItem>>()
+    val remindersList: LiveData<List<ReminderDataItem>>
+        get() = _remindersList
 
     val remindersListAdapter
         get() = RemindersListAdapter {
@@ -23,6 +26,10 @@ class RemindersListViewModel(
                 ReminderListFragmentDirections.toEditReminder(it)
             )
         }
+
+    private val _showNoData = MutableLiveData(true)
+    override val showNoData: LiveData<Boolean>
+        get() = _showNoData
 
     /**
      * Get all the reminders from the DataSource and add them to the remindersList to be shown on the UI,
@@ -42,7 +49,7 @@ class RemindersListViewModel(
                             //map the reminder data from the DB to the be ready to be displayed on the UI
                             reminder.toDataItem()
                         })
-                        remindersList.value = dataList
+                        _remindersList.value = dataList
                     }
                 }
                 is Result.Error -> showSnackBar.value = result.message ?: ""
@@ -58,7 +65,7 @@ class RemindersListViewModel(
      * Inform the user that there's not any data if the remindersList is empty
      */
     private fun invalidateShowNoData() {
-        showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
+        _showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
     }
 
     fun navigateToAddReminder() {

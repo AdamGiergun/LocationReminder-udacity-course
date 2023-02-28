@@ -1,5 +1,6 @@
 package com.udacity.project4.base
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.udacity.project4.utils.SingleLiveEvent
@@ -16,6 +17,6 @@ abstract class BaseViewModel : ViewModel() {
     val showToast: SingleLiveEvent<String> = SingleLiveEvent()
     val showToastInt: SingleLiveEvent<Int> = SingleLiveEvent()
     val showLoading: SingleLiveEvent<Boolean> = SingleLiveEvent()
-    val showNoData: MutableLiveData<Boolean> = MutableLiveData()
+    open val showNoData: LiveData<Boolean> = MutableLiveData()
 
 }

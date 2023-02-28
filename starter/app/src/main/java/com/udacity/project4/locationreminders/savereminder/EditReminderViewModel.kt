@@ -24,7 +24,13 @@ import kotlinx.coroutines.launch
 class EditReminderViewModel(private val dataSource: ReminderDataSource) :
     BaseViewModel() {
 
-    val resolvableApiException = MutableLiveData<ResolvableApiException?>()
+    private val _resolvableApiException = MutableLiveData<ResolvableApiException?>()
+    val resolvableApiException: LiveData<ResolvableApiException?>
+        get() = _resolvableApiException
+
+    fun setResolvableApiException(apiException: ResolvableApiException?) {
+        _resolvableApiException.value = apiException
+    }
 
     private val editedReminder = EditedReminder()
 
@@ -151,7 +157,7 @@ class EditReminderViewModel(private val dataSource: ReminderDataSource) :
             when (exception.statusCode) {
                 GeofenceStatusCodes.GEOFENCE_INSUFFICIENT_LOCATION_PERMISSION -> {
                     if (exception is ResolvableApiException)
-                        resolvableApiException.value = exception
+                        _resolvableApiException.value = exception
                 }
 
                 GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE ->
