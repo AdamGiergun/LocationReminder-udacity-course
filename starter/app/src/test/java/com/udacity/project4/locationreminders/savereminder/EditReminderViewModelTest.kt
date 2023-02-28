@@ -24,7 +24,6 @@ import org.koin.test.inject
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class EditReminderViewModelTest : KoinTest {
-    //TODO: provide testing to the SaveReminderView and its live data objects
 
     private val editReminderViewModel: EditReminderViewModel by inject()
 

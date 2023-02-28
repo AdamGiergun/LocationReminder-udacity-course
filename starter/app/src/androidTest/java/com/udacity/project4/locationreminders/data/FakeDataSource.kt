@@ -6,8 +6,6 @@ import com.udacity.project4.locationreminders.data.dto.Result
 //Use FakeDataSource that acts as a test double to the LocalDataSource
 class FakeDataSource : ReminderDataSource {
 
-//    TODO: Create a fake data source to act as a double to the real data source
-
     private val listOfReminders = mutableListOf<ReminderDTO>()
 
     override suspend fun getReminders(): Result<List<ReminderDTO>> =
@@ -32,18 +30,18 @@ class FakeDataSource : ReminderDataSource {
     }
 
     override suspend fun removeGeofenceId(geofenceId: String) {
-        TODO("Not yet implemented")
+        // not needed at this moment for fake
     }
 
     override suspend fun updateReminder(reminder: ReminderDTO) {
-        TODO("Not yet implemented")
+        // not needed at this moment for fake
     }
 
     override suspend fun deleteReminder(reminder: ReminderDTO) {
-        TODO("Not yet implemented")
+        // not needed at this moment for fake
     }
 
     override suspend fun deleteAllReminders() {
-        TODO("delete all the reminders")
+        // not needed at this moment for fake
     }
 }

@@ -187,7 +187,6 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
         }
     }
 
-    //    TODO: add testing for the error messages.
     @Test
     fun emptyDataStore_errorSnackbarShown() = runTest(StandardTestDispatcher()) {
         // GIVEN empty datastore
