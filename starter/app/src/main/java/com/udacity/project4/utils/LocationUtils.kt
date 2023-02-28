@@ -20,11 +20,10 @@ enum class LocationState {
 }
 
 val locationRequest
-    get() = LocationRequest.create().apply {
-        interval = 5000
-        fastestInterval = 2000
-        priority = Priority.PRIORITY_HIGH_ACCURACY
-    }
+    get() = LocationRequest.Builder(5000)
+        .setMinUpdateIntervalMillis(2000)
+        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+        .build()
 
 fun isBackgroundLocationPermissionGranted(context: Context) =
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
