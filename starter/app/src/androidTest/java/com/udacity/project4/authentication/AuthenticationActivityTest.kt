@@ -97,7 +97,6 @@ class AuthenticationActivityTest: AutoCloseKoinTest() {
         ActivityScenario.launch(AuthenticationActivity::class.java).run {
             // GIVEN - user is authenticated
             mockAuthenticationViewModelImpl.authenticationState.postValue(AuthenticationViewModel.AuthenticationState.AUTHENTICATED)
-            dataBindingIdlingResource.monitorActivity(this)
 
             // WHEN - there are no reminders in db
             // THEN - user sees reminders activity with empty list
