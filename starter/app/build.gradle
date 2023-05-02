@@ -24,8 +24,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
+    kotlin {
+        jvmToolchain(11)
     }
     testOptions {
         unitTests {
@@ -45,6 +45,10 @@ android {
         resources {
             excludes += ['META-INF/LICENSE.md', 'META-INF/LICENSE-notice.md']
         }
+    }
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_11
     }
 }
 
@@ -103,7 +107,7 @@ dependencies {
     testImplementation "androidx.arch.core:core-testing:$archTestingVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
-    testImplementation 'org.robolectric:robolectric:4.9.2'
+    testImplementation 'org.robolectric:robolectric:4.10'
     testImplementation "com.google.truth:truth:$truthVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 
@@ -143,10 +147,10 @@ dependencies {
     implementation 'com.google.maps.android:maps-ktx:3.4.0'
     implementation 'com.google.maps.android:maps-utils-ktx:3.4.0'
 
-    implementation platform('com.google.firebase:firebase-bom:31.2.2')
+    implementation platform('com.google.firebase:firebase-bom:32.0.0')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.firebaseui:firebase-ui-auth:8.0.2'
-    implementation 'com.google.android.gms:play-services-auth:20.4.1'
+    implementation 'com.google.android.gms:play-services-auth:20.5.0'
 
     androidTestImplementation 'com.agoda.kakao:kakao:2.4.0'
 }
