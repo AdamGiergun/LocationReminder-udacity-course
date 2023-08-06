@@ -24,9 +24,8 @@ import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.EditReminderViewModel
 import com.udacity.project4.util.DataBindingIdlingResource
-import com.udacity.project4.utils.EspressoIdlingResource
 import com.udacity.project4.util.monitorActivity
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -41,7 +40,6 @@ import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 //END TO END test to black box test the app

@@ -48,7 +48,6 @@ class DataBindingIdlingResource : IdlingResource {
 
     override fun isIdleNow(): Boolean {
         val idle = !getBindings().any { it.hasPendingBindings() }
-        @Suppress("LiftReturnOrAssignment")
         if (idle) {
             if (wasNotIdle) {
                 // notify observers to avoid espresso race detector
