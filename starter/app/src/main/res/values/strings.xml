@@ -59,4 +59,6 @@
     <string name="add_location_reminder_button">Add location reminder button</string>
     <string name="map_drawable_desc">Some fancy picture with someone pointing something on a paper map</string>
     <string name="radius_m">Radius (m)</string>
+    <string name="background_location_rationale">Background location permission is needed to notify you when you reach a geofence</string>
+    <string name="fine_location_rationale">Fine location permission is needed to better locate the geofence</string>
 </resources>

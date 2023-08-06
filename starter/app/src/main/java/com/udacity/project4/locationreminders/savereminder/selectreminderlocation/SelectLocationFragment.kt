@@ -18,6 +18,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -35,6 +36,7 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.EditReminderViewModel
 import com.udacity.project4.utils.*
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 private const val TAG = "LocationReminder"
@@ -53,44 +55,71 @@ class SelectLocationFragment : BaseFragment() {
     private val permissionsRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        var granted = true
-        permissions.forEach {
-            granted = granted and it.value
-        }
+        val granted = permissions.all { it.value }
+//        permissions.forEach {
+//            granted = granted and it.value
+//        }
 
         if (granted)
-            _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
+            _viewModel.setLocationState(LocationState.ENABLED)
         else {
             val permission =
                 when {
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
                             Manifest.permission.ACCESS_BACKGROUND_LOCATION in permissions ->
                         Manifest.permission.ACCESS_BACKGROUND_LOCATION
+
                     Manifest.permission.ACCESS_FINE_LOCATION in permissions ->
                         Manifest.permission.ACCESS_FINE_LOCATION
+
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                             Manifest.permission.POST_NOTIFICATIONS in permissions ->
                         Manifest.permission.ACCESS_FINE_LOCATION
+
                     else ->
                         null
                 }
 
-            _viewModel.showToast.value =
-                if (permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    "Access background location is needed"
-                else
-                    "Fine location is needed"
+            when {
+                permission != null && shouldShowRequestPermissionRationale(permission) -> {
+                    showRationale(permission)
+                    _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
+                }
 
-            if (permission != null && shouldShowRequestPermissionRationale(permission)) {
-                _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
-            } else {
-                appPermissionsSettingsRequest.launch(
-                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", requireActivity().packageName, null)
-                    }
-                )
+                permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION -> {
+                    appPermissionsSettingsRequest.launch(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", requireActivity().packageName, null)
+                        }
+                    )
+
+                }
+
+                permission == Manifest.permission.POST_NOTIFICATIONS -> {
+                    _viewModel.setLocationState(LocationState.ENABLED)
+                }
             }
+//            if (permission != null && shouldShowRequestPermissionRationale(permission)) {
+//                showRationale(permission)
+//                _viewModel.setLocationState(LocationState.CHECK_SETTINGS)
+//            } else {
+//                _viewModel.setLocationState(LocationState.ENABLED)
+//                if (permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+//                    appPermissionsSettingsRequest.launch(
+//                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+//                            data = Uri.fromParts("package", requireActivity().packageName, null)
+//                        }
+//                    )
+//            }
         }
+    }
+
+    private fun showRationale(permission: String?) {
+        _viewModel.showToast.value =
+            if (permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                getString(R.string.background_location_rationale)
+            else
+                getString(R.string.fine_location_rationale)
     }
 
     private val appPermissionsSettingsRequest = registerForActivityResult(
@@ -126,18 +155,22 @@ class SelectLocationFragment : BaseFragment() {
                     googleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
                     true
                 }
+
                 R.id.hybrid_map -> {
                     googleMap?.mapType = GoogleMap.MAP_TYPE_HYBRID
                     true
                 }
+
                 R.id.satellite_map -> {
                     googleMap?.mapType = GoogleMap.MAP_TYPE_SATELLITE
                     true
                 }
+
                 R.id.terrain_map -> {
                     googleMap?.mapType = GoogleMap.MAP_TYPE_TERRAIN
                     true
                 }
+
                 else -> false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
@@ -275,33 +308,36 @@ class SelectLocationFragment : BaseFragment() {
             }
         }
 
-        lifecycleScope.launchWhenCreated {
-            val mapFragment: SupportMapFragment? =
-                childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
-            googleMap = mapFragment?.awaitMap()
-            googleMap?.apply {
-                setMyMapStyle()
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED)
+            {
+                val mapFragment: SupportMapFragment? =
+                    childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
+                googleMap = mapFragment?.awaitMap()
+                googleMap?.apply {
+                    setMyMapStyle()
 
-                setOnMapLongClickListener { latLng ->
-                    val marker = addMarker(
-                        MarkerOptions()
-                            .position(latLng)
-                    )
-                    SaveLocationDialog(_viewModel, null, latLng, marker)
-                        .show(childFragmentManager, TAG)
-                }
+                    setOnMapLongClickListener { latLng ->
+                        val marker = addMarker(
+                            MarkerOptions()
+                                .position(latLng)
+                        )
+                        SaveLocationDialog(_viewModel, null, latLng, marker)
+                            .show(childFragmentManager, TAG)
+                    }
 
-                setOnPoiClickListener { pointOfInterest ->
-                    val poiMarker = addMarker(
-                        MarkerOptions()
-                            .position(pointOfInterest.latLng)
-                            .title(pointOfInterest.name)
-                    )
+                    setOnPoiClickListener { pointOfInterest ->
+                        val poiMarker = addMarker(
+                            MarkerOptions()
+                                .position(pointOfInterest.latLng)
+                                .title(pointOfInterest.name)
+                        )
 
-                    poiMarker?.showInfoWindow()
+                        poiMarker?.showInfoWindow()
 
-                    SaveLocationDialog(_viewModel, pointOfInterest, null, poiMarker)
-                        .show(childFragmentManager, TAG)
+                        SaveLocationDialog(_viewModel, pointOfInterest, null, poiMarker)
+                            .show(childFragmentManager, TAG)
+                    }
                 }
             }
         }
