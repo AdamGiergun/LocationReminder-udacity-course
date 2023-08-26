@@ -2,8 +2,16 @@ package com.udacity.project4.locationreminders.geofence
 
 import android.content.Context
 import android.util.Log
-import androidx.work.*
+import androidx.work.CoroutineWorker
+import androidx.work.Data
+import androidx.work.ForegroundInfo
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkerParameters
 import com.udacity.project4.locationreminders.data.ReminderDataSource
+import com.udacity.project4.utils.getFakeNotification
+import com.udacity.project4.utils.getUniqueId
 import org.koin.java.KoinJavaComponent.inject
 
 private const val TAG = "InactivateReminderW"
@@ -24,6 +32,11 @@ class InactivateReminderWorker(context: Context, workerParameters: WorkerParamet
     }
 
     override suspend fun doWork(): Result {
+        removeGeofenceFromDB()
+        return Result.success()
+    }
+
+    private suspend fun removeGeofenceFromDB() {
         inputData.getString(GEOFENCE_ID)?.let { geofenceId ->
             val remindersLocalRepository: ReminderDataSource by inject(
                 ReminderDataSource::class.java
@@ -31,6 +44,9 @@ class InactivateReminderWorker(context: Context, workerParameters: WorkerParamet
             remindersLocalRepository.removeGeofenceId(geofenceId)
             Log.d(TAG, "Reminder set inactive")
         }
-        return Result.success()
+    }
+
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        return ForegroundInfo(getUniqueId(), getFakeNotification(applicationContext))
     }
 }

@@ -2,14 +2,25 @@ package com.udacity.project4.locationreminders.geofence
 
 import android.content.Context
 import android.util.Log
-import androidx.work.*
+import androidx.work.CoroutineWorker
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.ForegroundInfo
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.utils.getFakeNotification
 import com.udacity.project4.utils.getGeofenceErrorMessage
 import com.udacity.project4.utils.getGeofencingClient
+import com.udacity.project4.utils.getUniqueId
 import com.udacity.project4.utils.sendNotification
 import com.udacity.project4.utils.toDataItem
 import org.koin.java.KoinJavaComponent.inject
@@ -56,7 +67,18 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
     }
 
     override suspend fun doWork(): Result {
-        inputData.getString(GEOFENCE_ID)?.let { geofenceId ->
+        return getReminder(getGeofenceId()).let {
+            if (it == null) {
+                Result.failure()
+            } else {
+                sendNotification(applicationContext, it)
+                Result.success()
+            }
+        }
+    }
+
+    private fun getGeofenceId(): String {
+        return inputData.getString(GEOFENCE_ID)?.let { geofenceId ->
             getGeofencingClient(applicationContext)
                 .removeGeofences(listOf(geofenceId)).apply {
                     addOnSuccessListener {
@@ -76,21 +98,25 @@ class GeofenceTransitionsWorker(context: Context, workerParameters: WorkerParame
                         Log.d(TAG, "Geofence not removed ${exception.localizedMessage}")
                     }
                 }
-            sendNotification(geofenceId)
-        }
-        return Result.success()
+            geofenceId
+        } ?: ""
     }
 
-    private suspend fun sendNotification(requestId: String) {
+    private suspend fun getReminder(requestId: String): ReminderDataItem? {
         val remindersLocalRepository: ReminderDataSource by inject(ReminderDataSource::class.java)
         //get the reminder with the request id
         val result = remindersLocalRepository.getReminder(requestId)
-        if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<ReminderDTO>) {
-            val reminderDTO = result.data
-            //send a notification to the user with the reminder details
-            sendNotification(
-                applicationContext, reminderDTO.toDataItem()
-            )
+        return if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<ReminderDTO>) {
+            result.data.toDataItem()
+        } else {
+            null
         }
+    }
+
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        return ForegroundInfo(
+            getUniqueId(),
+            getFakeNotification(applicationContext)
+        )
     }
 }
