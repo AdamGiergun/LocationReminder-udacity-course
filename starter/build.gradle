@@ -22,7 +22,7 @@ plugins {
 }
 
 tasks.register('clean', Delete) {
-    delete rootProject.buildDir
+    delete layout.buildDirectory
 }
 
 ext {

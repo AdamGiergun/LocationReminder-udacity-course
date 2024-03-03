@@ -14,7 +14,7 @@ sealed class NavigationCommand {
     /**
      * navigate back to the previous fragment
      */
-    object Back : NavigationCommand()
+    data object Back : NavigationCommand()
 
     /**
      * navigate back to a destination in the back stack
