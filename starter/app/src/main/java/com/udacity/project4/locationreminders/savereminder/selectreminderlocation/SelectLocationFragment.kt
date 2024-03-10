@@ -74,7 +74,7 @@ class SelectLocationFragment : BaseFragment() {
 
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                             Manifest.permission.POST_NOTIFICATIONS in permissions ->
-                        Manifest.permission.ACCESS_FINE_LOCATION
+                        Manifest.permission.POST_NOTIFICATIONS
 
                     else ->
                         null
