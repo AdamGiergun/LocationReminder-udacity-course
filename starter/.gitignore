@@ -7,3 +7,5 @@
 /captures
 .externalNativeBuild
 .cxx
+/secret.properties
+/local.defaults.properties
